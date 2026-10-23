@@ -1,0 +1,27 @@
+{
+  "session-memory-injector": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python3 ./memory/hook_handler.py --mode pre-invocation",
+        "timeout": 5
+      }
+    ]
+  },
+  "context-bloat-guard": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "view_file|replace_file_content|multi_replace_file_content|write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./memory/hook_handler.py --mode pre-tool-use",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

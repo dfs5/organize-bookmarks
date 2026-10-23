@@ -1,0 +1,147 @@
+# ==============================================================================
+# AI Agent Server Configuration Template (ai_agent_server.conf.example)
+# ==============================================================================
+# Copy this file to `ai_agent_server.conf` to customize for your environment:
+#   cp ai_agent_server/ai_agent_server.conf.example ai_agent_server/ai_agent_server.conf
+# ==============================================================================
+
+{
+  "server": {
+    # Port to listen on (can be overridden by BOOKMARKS_AI_PORT environment variable)
+    "port": 8765,
+    # Host binding (0.0.0.0 listens on all interfaces, 127.0.0.1 for local only)
+    "host": "0.0.0.0",
+    # Relative paths are resolved relative to this configuration file's directory
+    "catalog_path": "../bookmarks_catalog.json",
+    "content_cache_path": "./bookmarks_content_cache.json",
+    "showcase_path": "../bookmarks_showcase.html"
+  },
+
+  "logging": {
+    # Communication logging between Frontend <-> Server and Server <-> LLMs
+    # Default is false: writing to log file is only enabled via command or runtime toggle
+    "traffic_logging": false,
+    "log_file": "./ai_communication.log",
+    # Set to true to also log periodic background healthcheck polling (/api/status)
+    "log_healthcheck": false
+  },
+
+
+  "llm": {
+    # Google Gemini Cloud / Vertex AI Configuration
+    # Supports Project ID authentication (ADC / OAuth2) or API Key
+    "gemini": {
+      "model": "Gemini 3.8 Flash (Medium)",
+      "project_id": "YOUR_GCP_PROJECT_ID",
+      "location": "global",
+      "api_key_env": "GEMINI_API_KEY",
+      "timeout_seconds": 10
+    },
+    # Local Ollama GPU Engine Configuration (e.g. Apple Silicon GPU)
+    "ollama": {
+      "url": "http://127.0.0.1:11434",
+      "preferred_model": "gemma3:4b",
+      "timeout_seconds": 7,
+      "temperature": 0.0,
+      "num_predict": 160
+    }
+  },
+
+  "scraper": {
+    # Number of concurrent worker threads for inspecting page bodies
+    "max_workers": 6,
+    # HTTP timeout for fetching live candidate webpage bodies
+    "timeout_seconds": 3.5,
+    # Domains requiring SSO authentication or internal login (bypassed from direct HTTP scraping)
+    "skipped_domains": [
+      "sharepoint.com",
+      "service-now.com",
+      "salesforce.com",
+      "tryopine.com",
+      "highspot.com",
+      "workday.com",
+      "benevity.org"
+    ],
+    # Binary file extensions that cannot be scraped as HTML
+    "skipped_extensions": [
+      ".pptx",
+      ".xlsx",
+      ".docx",
+      ".pdf",
+      ".zip"
+    ]
+  },
+
+  "ranking": {
+    # BM25 term frequency saturation parameter
+    "bm25_k1": 1.5,
+    # BM25 document length normalization parameter
+    "bm25_b": 0.75,
+    # Logarithmic boost factor for historical browser visit counts
+    "visit_boost_factor": 1.5,
+    # Max candidates retrieved for deep content inspection
+    "max_candidates": 20,
+    # Default number of verified bookmarks returned to client
+    "default_limit": 10
+  },
+
+  # Query normalization and typo correction mappings
+  "common_typos": {
+    "migarte": "migrate",
+    "migate": "migrate",
+    "mirgate": "migrate",
+    "migraton": "migration",
+    "conver": "convert",
+    "convrting": "convert",
+    "convrt": "convert",
+    "iruls": "irules",
+    "iruel": "irules",
+    "irueles": "irules",
+    "bigip": "big-ip",
+    "bip-ip": "big-ip",
+    "bipip": "big-ip",
+    "f5xc": "f5-xc",
+    "voltera": "volterra",
+    "ngnix": "nginx",
+    "ngnx": "nginx"
+  },
+
+  # Product taxonomy mappings
+  "product_keywords": {
+    "big-ip": ["big-ip", "bigip", "tmos", "ltm", "apm", "asm", "awaf", "gtm", "big-iq", "bigiq", "f5os"],
+    "rseries": ["rseries", "r-series", "r2000", "r4000", "r5000", "r10000", "f5os-a"],
+    "velos": ["velos", "f5os-c", "chassis", "blade", "cx410", "bx110"],
+    "nginx": ["nginx", "nginx plus", "njs", "nap", "nginx app protect", "nic", "nginx ingress"],
+    "f5-xc": ["f5-xc", "f5 xc", "f5xc", "xc platform", "distributed cloud", "volterra", "waap", "xc console", "multi-cloud", "\\bxc\\b"],
+    "f5-ai-gateway": ["ai-gateway", "ai gateway", "f5 ai gateway", "govern secure optimize ai"],
+    "f5-workforce-ai-security": ["workforce ai", "surepath", "surepath ai", "f5-workforce-ai-security", "f5 workforce ai", "genai traffic"],
+    "ai-guardrails": ["guardrail", "guardrails", "calypso", "calypsoai", "prompt security", "custom scanners"],
+    "public-cloud": ["aws", "azure", "gcp", "google cloud", "openshift", "ocp", "cloud template", "arm template"],
+    "ai-workloads": ["calypso", "calypsoai", "guardrail", "llm", "genai", "prompt security", "ai workload"]
+  },
+
+  # Topic taxonomy mappings
+  "topic_keywords": {
+    "sizing-capacity": ["sizing", "advisor", "capacity", "calculator", "throughput", "tps", "cpu core", "license tier", "specifications", "datasheet", "ve spec"],
+    "access-identity": ["apm", "saml", "oauth", "oidc", "kerberos", "sso", "vpn", "edge client", "webtop", "identity", "spnego", "mfa"],
+    "security-waf": ["waf", "awaf", "asm", "security", "dos", "ddos", "bot", "sirt", "cve", "threat", "signature", "advisory", "vulnerability"],
+    "traffic-ssl": ["ltm", "ssl", "tls", "cipher", "certificate", "icap", "virtual server", "pool", "persistence", "tcp", "fastl4"],
+    "dns-gtm": ["dns", "gtm", "wideip", "wide-ip", "bind", "zone", "dnssec"],
+    "releases-lifecycle": ["matrix", "lifecycle", "eol", "eos", "release date", "software policy", "compatibility", "hotfix", "version"],
+    "automation-devops": ["as3", "fast", "declarative", "terraform", "ansible", "rest api", "automation", "postman", "cicd"],
+    "kubernetes-containers": ["k8s", "kubernetes", "ingress", "gateway api", "container", "openshift", "cilium"],
+    "programmability-irules": ["irule", "irules", "tcl", "njs", "event", "devcentral snippet"]
+  },
+
+  # Source type keywords
+  "source_type_keywords": {
+    "kb-article": ["kb", "k-number", "article", "support article", "knowledge base", "k2633", "k13000", "my.f5"],
+    "techdocs": ["techdocs", "clouddocs", "documentation", "manual", "guide", "docs.f5.com", "docs.nginx.com"],
+    "github-repo": ["github", "gitlab", "repo", "repository", "code", "demo code"],
+    "devcentral": ["devcentral", "community article", "forum", "crowd"],
+    "dashboard": ["tableau", "salesforce", "dashboard", "telemetry", "bi", "metrics"],
+    "internal-portal": ["servicenow", "portal", "sharepoint", "workday", "supportnet", "rma", "license key"],
+    "roadmap-ideas": ["aha", "roadmap", "ideas", "feature request"],
+    "sizing-tool": ["sizing tool", "calculator", "advisor tool"]
+  }
+}

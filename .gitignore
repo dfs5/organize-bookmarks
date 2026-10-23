@@ -1,0 +1,30 @@
+# Live Bookmark Data & Generated HTML Outputs
+bookmarks_catalog.json
+bookmarks_catalog.json.bak*
+bookmarks_showcase.html
+favorites_product_frequency_organized.html
+ai_agent_server/bookmarks_content_cache.json
+ai_agent_server/bookmarks_verified_metadata.json
+
+# Local Server Config (use ai_agent_server.conf.example as template)
+ai_agent_server/ai_agent_server.conf
+
+# Runtime Logs & PIDs
+*.log
+ai_agent_server/*.log
+ai_agent_server/.ai_server.pid
+
+# Agent Runtime State & Vector DB
+.agents/memory/memory_index.sqlite
+.agents/memory/memory_index.sqlite-*
+.agents/memory/session_state.json
+
+# Local Scratch, Audits & Backups
+archive/
+scratch/
+
+# Python & macOS Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store

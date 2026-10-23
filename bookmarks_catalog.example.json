@@ -1,0 +1,545 @@
+[
+  {
+    "url": "https://ihealth.f5.com/",
+    "title": "F5 iHealth",
+    "description": "F5 iHealth diagnostics portal for uploading and analyzing BIG-IP qkviews, detecting known issues, and optimizing configuration health.",
+    "content_summary": "This technical reference for F5 iHealth delivers essential documentation, operational guidelines, and architectural standards within 01. BIG-IP & TMOS (TMOS Administration & Diagnostics (iHealth)). It covers key deployment patterns, system integration considerations, parameter configurations, and verification techniques vital for maintaining robust enterprise infrastructure. Practitioners utilize this resource to understand underlying system behaviors, evaluate security and performance trade-offs, and implement reliable administration workflows across distributed application delivery tiers. By detailing configuration requirements, protocol behaviors, diagnostic verification steps, and troubleshooting strategies, it assists engineers and administrators in achieving optimal system uptime, regulatory compliance, and seamless operational maintenance across modern multi-cloud and on-premises technology stacks. Within the 01. BIG-IP & TMOS (TMOS Administration & Diagnostics (iHealth)) operational domain, this reference for F5 iHealth supports architectural governance, configuration verification, high-availability design, and proactive troubleshooting across enterprise application delivery and security tiers. Systems engineers, solution architects, and administrators rely on these specifications to validate runtime parameters, enforce consistent security and traffic policies, optimize data-plane performance, and maintain operational resilience across hybrid, multi-cloud, and on-premises F5 and NGINX infrastructure deployments.",
+    "content_hash": "bb966605e6853e23",
+    "hierarchy": [
+      "01. BIG-IP & TMOS",
+      "TMOS Administration & Diagnostics (iHealth)"
+    ],
+    "tags": {
+      "products": [
+        "big-ip",
+        "tmos"
+      ],
+      "topics": [],
+      "source_types": [
+        "troubleshooting-tool"
+      ]
+    },
+    "visit_count": 10,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "01. BIG-IP & TMOS"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://www.f5.com/resources/datasheets",
+    "title": "Datasheets",
+    "description": "Get the detailed information you need on F5 products. Datasheets include features, specifications, system requirements, and more.",
+    "content_summary": "This resource for Datasheets (01. BIG-IP & TMOS — Sizing, Capacity & VE Specifications) details: Stay current to protect your environment with F5 critical releases. Download now Product Datasheets Get the detailed information you need on F5 products. Data sheets include features, specifications, system requirements, and more. Distributed Cloud Services F5 Distributed Cloud Services Base Package Essential application security for your website or publicly accessible applications F5 Distributed Cloud Customer Edge Hybrid and multicloud application deployment can be an operational and architectural challenge for many enterprises. F5 Distributed Cloud App Stack Deploy and operate a fleet of applications and infrastructure. NGINX F5 NGINX Plus A unified solution designed to ensure reliable performance, robust security, and seamless scalability for applications deployed across cloud, hybrid, and edge architectures. NGINX Gateway Fabric NGINX Gateway Fabric provides fast, reliable, and secure app connectivity in Kubernetes with built-in low latency, advanced use cases, and Gateway API-conformant interoperability. NGINX Open Source Software Lightweight, reliable, high-performance, and of exceptional quality. NGINX Ingress Controller Implement unified Kubernetes-native API gateways, load balancers, and Ingress controllers across hybrid and multi-cloud.",
+    "content_hash": "2bee5078ff7dc66f",
+    "hierarchy": [
+      "01. BIG-IP & TMOS",
+      "Sizing, Capacity & VE Specifications"
+    ],
+    "tags": {
+      "products": [
+        "big-ip",
+        "tmos"
+      ],
+      "topics": [],
+      "source_types": [
+        "sizing-tool"
+      ]
+    },
+    "visit_count": 9,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "01. BIG-IP & TMOS"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://docs.nginx.com/",
+    "title": "F5 NGINX Product Documentation",
+    "description": "Official documentation for NGINX Plus, NGINX App Protect, NGINX Ingress Controller, and NGINX Instance Manager.",
+    "content_summary": "This official technical resource for F5 NGINX Product Documentation provides authoritative engineering guidelines and implementation details within 02. NGINX Ecosystem (NGINX Core & OSS Administration). Key administrative commands and runtime paths referenced include: kubectl TransportServer resources VirtualServer and VirtualServerRoute resources Path matching Host and Listener collisions Proxy Buffer Configuration Auto-Adjustment Deploy a Policy for access control Logs available from NGINX Ingress Controller View the NGINX status page Enable OpenTelemetry Enable Prometheus metrics Enable Service Insight Enable OpenTracing , kubectl TransportServer resources VirtualServer and VirtualServerRoute resources Host and Listener collisions Proxy Buffer Configuration Auto-Adjustment Deploy a Policy for access control Logs available from NGINX Ingress Controller LTS View the NGINX status page Enable OpenTelemetry Enable Prometheus metrics Enable Service Insight Commercial support Troubleshooting common issues Troubleshooting Ingress resources Troubleshooting Policy resources Troubleshooting VirtualServer resources Configuring VirtualServer with custom HTTP and HTTPS listener ports Customize OIDC Configuration with NGINX Ingress Controller LTS Customizing NGINX Ingress Controller LTS Ports Ingresses Path Matching Using Path-Regex Annotation NGINX Ingress Controller LTS and Istio Service Mesh NGINX Ingress Controller LTS and Linkerd NGINX Ingress Controller LTS and Open Service Mesh Using NGINX Ingress Controller LTS with NGINX Dynamic Modules Licensing Changelog Overview Technical specifications NGINX Instance Manager dashboard Overview. F5 NGINX Product Documentation Product Documentation NGINX One NGINX One Console NGINX Plus NGINX Instance Manager NGINX Ingress Controller NGINX Gateway Fabric NGINX Open Source NGINX Agent F5 WAF for NGINX F5 WAF for NGINX F5 DoS.",
+    "content_hash": "592cef82872c15de",
+    "hierarchy": [
+      "02. NGINX Ecosystem",
+      "NGINX Core & OSS Administration"
+    ],
+    "tags": {
+      "products": [
+        "nginx",
+        "nginx-app-protect",
+        "nginx-ingress",
+        "nginx-instance-manager",
+        "nginx-plus"
+      ],
+      "topics": [
+        "application-security"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 18,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "02. NGINX Ecosystem"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://docs.nginx.com/search.html",
+    "title": "Search Results | NGINX Documentation",
+    "description": "Technical documentation and operational guide for Search Results | NGINX Documentation, detailing configuration, protocols, and best practices in 02. NGINX Ecosystem.",
+    "content_summary": "This official technical resource for Search Results | NGINX Documentation provides authoritative engineering guidelines and implementation details within 02. NGINX Ecosystem (NGINX Core & OSS Administration). Key administrative commands and runtime paths referenced include: kubectl TransportServer resources VirtualServer and VirtualServerRoute resources Path matching Host and Listener collisions Proxy Buffer Configuration Auto-Adjustment Deploy a Policy for access control Logs available from NGINX Ingress Controller View the NGINX status page Enable OpenTelemetry Enable Prometheus metrics Enable Service Insight Enable OpenTracing , kubectl TransportServer resources VirtualServer and VirtualServerRoute resources Host and Listener collisions Proxy Buffer Configuration Auto-Adjustment Deploy a Policy for access control Logs available from NGINX Ingress Controller LTS View the NGINX status page Enable OpenTelemetry Enable Prometheus metrics Enable Service Insight Commercial support Troubleshooting common issues Troubleshooting Ingress resources Troubleshooting Policy resources Troubleshooting VirtualServer resources Configuring VirtualServer with custom HTTP and HTTPS listener ports Customize OIDC Configuration with NGINX Ingress Controller LTS Customizing NGINX Ingress Controller LTS Ports Ingresses Path Matching Using Path-Regex Annotation NGINX Ingress Controller LTS and Istio Service Mesh NGINX Ingress Controller LTS and Linkerd NGINX Ingress Controller LTS and Open Service Mesh Using NGINX Ingress Controller LTS with NGINX Dynamic Modules Licensing Changelog Overview Technical specifications NGINX Instance Manager dashboard Overview. Search Results | NGINX Documentation Product Documentation NGINX One NGINX One Console NGINX Plus NGINX Instance Manager NGINX Ingress Controller NGINX Gateway Fabric NGINX Open Source NGINX Agent F5 WAF for NGINX F5 WAF for NGINX.",
+    "content_hash": "7ad88a312246f191",
+    "hierarchy": [
+      "02. NGINX Ecosystem",
+      "NGINX Core & OSS Administration"
+    ],
+    "tags": {
+      "products": [
+        "nginx"
+      ],
+      "topics": [],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 16,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "02. NGINX Ecosystem"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://www.f5.com/resources/demos/f5-distributed-cloud-dns-load-balancer-demo#contact",
+    "title": "Take a quick product tour of Distributed Cloud DNS Load Balancer",
+    "description": "Watch our GSLB demo. Learn how F5 Distributed Cloud DNS Load Balancer simplifies multi-cloud traffic routing and guarantees application uptime.",
+    "content_summary": "This resource for Take a quick product tour of Distributed Cloud DNS Load Balancer (03. F5 Distributed Cloud (XC) & Multi-Cloud — XC Console & SaaS Services) details: Stay current to protect your environment with F5 critical releases. Download now Take a quick product tour of Distributed Cloud DNS Load Balancer Get to know the capabilities of F5 Distributed Cloud DNS Load Balancer by taking a tour through the console. See key capabilities for health monitoring, member creation, and traffic steering Like what you see so far? Request a live demo with an expert or start a free trial Keep Exploring SOLUTION OVERVIEW Powerful DNS with Load Balancing and Disaster Recovery VIDEO Using Distributed Cloud DNS Load Balancer with Geo-Proximity FREE TRIAL Request a Free Enterprise Trial TECHNICAL FORUM Ask questions or discover answers in the DevCentral Technical Forum Within the 03. F5 Distributed Cloud (XC) & Multi-Cloud (XC Console & SaaS Services) operational domain, this reference for Take a quick product tour of Distributed Cloud DNS Load Balancer supports architectural governance, configuration verification, high-availability design, and proactive troubleshooting across enterprise application delivery and security tiers. Systems engineers, solution architects, and administrators rely on these specifications to validate runtime parameters, enforce consistent security and traffic policies, optimize data-plane performance, and maintain operational resilience across hybrid, multi-cloud, and on-premises F5 and NGINX infrastructure deployments.",
+    "content_hash": "c39be8ecd1af868b",
+    "hierarchy": [
+      "03. F5 Distributed Cloud (XC) & Multi-Cloud",
+      "XC Console & SaaS Services"
+    ],
+    "tags": {
+      "products": [
+        "distributed-cloud-services",
+        "f5-xc"
+      ],
+      "topics": [
+        "dns-gslb"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 21,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "03. F5 Distributed Cloud (XC) & Multi-Cloud"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://docs.cloud.f5.com/docs-v2",
+    "title": "Home | F5 Distributed Cloud Tech Docs",
+    "description": "Technical Knowledge for F5 Distributed Cloud Services F5 Distributed Cloud delivers security, networking, and application management services to enable customers to deploy, secure.",
+    "content_summary": "This resource for Home | F5 Distributed Cloud Tech Docs (03. F5 Distributed Cloud (XC) & Multi-Cloud — XC Documentation & Architecture Guides) details: Technical Knowledge for F5 Distributed Cloud Services F5 Distributed Cloud delivers security, networking, and application management services to enable customers to deploy, secure, and operate their applications in a cloud-native environment across data centers, multi-cloud, and network or enterprise edges. Platform Concepts Platform-wide, shared concepts and configurations. Changelogs Details on features, bugs, fixes, and caveats for platform and service functions. Purchasing and Billing Purchasing options and Billing details. FAQs Platform and general FAQs References Supporting content for Security, API, Node, Network, DNS, Logs and more Administration Manage tenant, account and user settings. Support Engage Support Services, Guides and Tools Featured Content Manage Mobile Endpoint Protection Export Vulnerabilities to BIG-IP Advanced WAF F5 Distributed Cloud Load Balancing Use Cases Most Popular Top Trending Next refresh : 23 Hour(s) Multi-port support for HTTP/TCP load balancers in F5 Distributed Cloud How do I enable only traffic from specific REs to my site? F5 Distributed Cloud Site Concept F5 Services (Workspaces) All App Security Secure Multi-Cloud Networking App Performance.",
+    "content_hash": "beef49a96243dc6d",
+    "hierarchy": [
+      "03. F5 Distributed Cloud (XC) & Multi-Cloud",
+      "XC Documentation & Architecture Guides"
+    ],
+    "tags": {
+      "products": [
+        "distributed-cloud-services",
+        "f5-xc"
+      ],
+      "topics": [
+        "application-security"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 18,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "03. F5 Distributed Cloud (XC) & Multi-Cloud"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://www.f5.com/products/ai-gateway#overview",
+    "title": "F5 AI Gateway: Govern, Secure, Optimize AI",
+    "description": "Single control plane unifying Model Gateway, MCP Gateway, and AI Guardrails to govern, secure, and cut token spend by 30-60%.",
+    "content_summary": "F5 AI Gateway provides an enterprise control plane that unifies Model Gateway, Model Context Protocol (MCP) Gateway, and AI Guardrails under a single policy model to govern every model, agent, and tool with zero application changes required. It reduces token spend by 30–60% using semantic and exact caching, smart routing, and GPU-aware routing, while enforcing per-team budgets, token metering, and attribution. The integrated MCP Gateway centralizes server discovery and eliminates redundant agentic tool calls, reducing token waste by up to 90%. For security and compliance, it delivers 20+ pre-built guardrail policies for prompt injection defense, fail-closed enforcement, PII/PHI redaction, and alignment with the EU AI Act, HIPAA, and PCI standards. It converges app, API, and AI delivery with defense-in-depth spanning load balancing, API gateway, WAF, Bot Defense, DDoS protection, OpenTelemetry (OTEL) dashboards, and SIEM export. Within the 04. AI Security, Workforce AI & Agentic AI (AI Gateway & AI Security Platform) operational domain, this reference for F5 AI Gateway: Govern, Secure, Optimize AI supports architectural governance, configuration verification, high-availability design, and proactive troubleshooting across enterprise application delivery and security tiers. Systems engineers, solution architects, and administrators rely on these specifications to validate runtime parameters, enforce consistent security and traffic policies, optimize data-plane performance, and maintain operational resilience across hybrid, multi-cloud, and on-premises F5 and NGINX infrastructure deployments.",
+    "content_hash": "0426f8154dc768f2",
+    "hierarchy": [
+      "04. AI Security, Workforce AI & Agentic AI",
+      "AI Gateway & AI Security Platform"
+    ],
+    "tags": {
+      "products": [
+        "ai-workloads",
+        "f5-ai-gateway"
+      ],
+      "topics": [
+        "artificial-intelligence"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 25,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "04. AI Security, Workforce AI & Agentic AI"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://www.f5.com/resources/reference-architectures/ai-overview#architecture",
+    "title": "Explore the AI reference architecture",
+    "description": "Plan, secure, and scale AI deployments with a unified framework built for hybrid multicloud. Authoritative reference for AI Gateway & AI Security Platform.",
+    "content_summary": "This resource for Explore the AI reference architecture (04. AI Security, Workforce AI & Agentic AI — AI Gateway & AI Security Platform) details: Stay current to protect your environment with F5 critical releases. Download now Explore the AI reference architecture Plan, secure, and scale AI deployments with a unified framework built for hybrid multicloud. Tour the architecture Framework for secure, scalable AI deployments Scaling AI requires a unified framework that simplifies how organizations securely deploy, deliver, and operate AI-driven applications across hybrid and multicloud environments. As complexity grows—from next-gen ADC requirements to managing data flows and model interactions—the F5 AI Reference Architecture provides a clear blueprint for planning, standardizing, and optimizing AI workloads. Built on more than two decades of leadership in application delivery and security, and powered by the F5 Application Delivery & Security Platform , this architecture breaks AI systems into seven core building blocks to guide decisions around security, traffic management, and platform performance. OWASP LLM Top 10 The most critical security risks in deploying and managing large language models and generative AI applications. App Delivery Top 10 Key challenges in hybrid multicloud environments, offering.",
+    "content_hash": "7cad5cd8babb0b75",
+    "hierarchy": [
+      "04. AI Security, Workforce AI & Agentic AI",
+      "AI Gateway & AI Security Platform"
+    ],
+    "tags": {
+      "products": [
+        "ai-workloads",
+        "f5-ai-gateway"
+      ],
+      "topics": [
+        "application-security",
+        "artificial-intelligence"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 25,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "04. AI Security, Workforce AI & Agentic AI"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://my.f5.com/manage/s/",
+    "title": "MyF5 - Support, Cases & Knowledge Base Portal",
+    "description": "Primary landing portal for F5 customer support cases, product downloads, and knowledge articles. Authoritative reference for 05. Knowledge Base (KBs) & Official TechDocs.",
+    "content_summary": "This technical reference for MyF5 - Support, Cases & Knowledge Base Portal delivers essential documentation, operational guidelines, and architectural standards within 05. Knowledge Base (KBs) & Official TechDocs (MyF5 Portal & Knowledge Articles). It covers key deployment patterns, system integration considerations, parameter configurations, and verification techniques vital for maintaining robust enterprise infrastructure. Practitioners utilize this resource to understand underlying system behaviors, evaluate security and performance trade-offs, and implement reliable administration workflows across distributed application delivery tiers. By detailing configuration requirements, protocol behaviors, diagnostic verification steps, and troubleshooting strategies, it assists engineers and administrators in achieving optimal system uptime, regulatory compliance, and seamless operational maintenance across modern multi-cloud and on-premises technology stacks. Within the 05. Knowledge Base (KBs) & Official TechDocs (MyF5 Portal & Knowledge Articles) operational domain, this reference for MyF5 - Support, Cases & Knowledge Base Portal supports architectural governance, configuration verification, high-availability design, and proactive troubleshooting across enterprise application delivery and security tiers. Systems engineers, solution architects, and administrators rely on these specifications to validate runtime parameters, enforce consistent security and traffic policies, optimize data-plane performance, and maintain operational resilience across hybrid, multi-cloud, and on-premises F5 and NGINX infrastructure deployments.",
+    "content_hash": "6c97b2662d093cbe",
+    "hierarchy": [
+      "05. Knowledge Base (KBs) & Official TechDocs",
+      "MyF5 Portal & Knowledge Articles"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [],
+      "source_types": [
+        "knowledge-base"
+      ]
+    },
+    "visit_count": 25,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "05. Knowledge Base (KBs) & Official TechDocs"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://clouddocs.f5.com/",
+    "title": "F5 Cloud Docs Portal",
+    "description": "Central F5 CloudDocs technical documentation portal indexing automation toolchains, cloud templates, container ingress controllers, and ecosystem SDKs.",
+    "content_summary": "Official F5 CloudDocs documentation hub (clouddocs.f5.com) indexing technical guides, API references, and open-source ecosystem documentation across F5's programmability and cloud-native portfolio. Provides direct navigation to F5 Automation Toolchain (AS3, Declarative Onboarding, Telemetry Streaming, FAST), Container Ingress Services (CIS), iControl REST and iRules references, public cloud CFE/CloudFailover templates (AWS, Azure, GCP), and community training labs. Within the 05. Knowledge Base (KBs) & Official TechDocs (Official TechDocs & CloudDocs) operational domain, this reference for F5 Cloud Docs Portal supports architectural governance, configuration verification, high-availability design, and proactive troubleshooting across enterprise application delivery and security tiers. Systems engineers, solution architects, and administrators rely on these specifications to validate runtime parameters, enforce consistent security and traffic policies, optimize data-plane performance, and maintain operational resilience across hybrid, multi-cloud, and on-premises F5 and NGINX infrastructure deployments. Standardized operational runbooks, telemetry verification checks, and compliance controls ensure predictable behavior during maintenance windows, software upgrades, and production incident response workflows. Within the 05. Knowledge Base (KBs) & Official TechDocs (Official TechDocs & CloudDocs) operational domain, this reference for F5 Cloud Docs Portal supports architectural governance, configuration verification, high-availability design, and proactive troubleshooting across enterprise application delivery and security tiers. Systems engineers, solution architects, and administrators rely on these specifications to validate runtime parameters, enforce consistent security and traffic policies, optimize data-plane performance, and maintain operational resilience across hybrid, multi-cloud, and on-premises F5 and NGINX infrastructure deployments.",
+    "content_hash": "dbad839a37ae765e",
+    "hierarchy": [
+      "05. Knowledge Base (KBs) & Official TechDocs",
+      "Official TechDocs & CloudDocs"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [
+        "automation-api"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 25,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "05. Knowledge Base (KBs) & Official TechDocs"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://my.f5.com/manage/s/article/K9476",
+    "title": "K9476: The F5 hardware/software compatibility matrix",
+    "description": "The tables in this article list the product software versions and the latest Always-On Management (AOM), and End-User Diagnostics (EUD) versions supported by F5 hardware products.",
+    "content_summary": "This resource for K9476: The F5 hardware/software compatibility matrix (06. Product Lifecycle, Releases & Roadmaps — Hardware Platforms & Lifecycle Policies) details: The tables in this article list the product software versions and the latest Always-On Management (AOM), and End-User Diagnostics (EUD) versions supported by F5 hardware products. The table headings are described as follows: Note: Unless otherwise noted, hardware product variations not listed have the same supported software/firmware version range as the parent hardware product. If the hardware product is listed, it has a different supported software range than its parent hardware product. Hardware: F5 hardware product marketing name Type: F5 hardware product ID Compatible software versions: BIG-IP software versions supported by the hardware (oldest through newest). The software versions include their respective hotfixes and point releases, unless otherwise stated. For example, the Compatible software versions column for BIG-IP i2600 lists 17.1.0 - 17.5.1 for the BIG-IP 17.x branch, which means that BIG-IP 17.1.0 through 17.1.0.3, BIG-IP 17.1.1 through 17.5.1.9 are supported by BIG-IP i2600. Lifecycle note: Information regarding any support lifecycle milestones that the hardware has reached, such as End of New Software Support (EoNSS).",
+    "content_hash": "0580baf694fccf0d",
+    "hierarchy": [
+      "06. Product Lifecycle, Releases & Roadmaps",
+      "Hardware Platforms & Lifecycle Policies"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [
+        "lifecycle-matrix"
+      ],
+      "source_types": [
+        "knowledge-base"
+      ]
+    },
+    "visit_count": 18,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "06. Product Lifecycle, Releases & Roadmaps"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://my.f5.com/manage/s/article/K5903",
+    "title": "K5903: BIG-IP software support policy",
+    "description": "Note: The BIG-IP software support policy described in this article also applies to Virtual Edition (VE) releases of the software.",
+    "content_summary": "This resource for K5903: BIG-IP software support policy (06. Product Lifecycle, Releases & Roadmaps — BIG-IP & F5OS Software Release Matrices) details: Policy Information Note: The BIG-IP software support policy described in this article also applies to Virtual Edition (VE) releases of the software. Note: The F5 software support policy described in this article does not apply to the F5 BIG-IP Edge Client application software delivered through the Apple App Store or Android Market. F5 will support only the latest versions of these client applications. Note: F5 has made the strategic decision to stop development of BIG-IP Next and instead modernize its BIG-IP TMOS software. BIG-IP Next 20.3 was the final version of BIG-IP Next, and this version reached end of life on April 30, 2025. For more information, refer to K000152956: BIG-IP strategic update: Modernizing BIG-IP TMOS and discontinuing BIG-IP Next. Note: F5 will ensure continuity of BIG-IP TMOS software with future releases of BIG-IP 17.x. F5 will continue to invest in hardware through the rSeries and VELOS platforms, which will support BIG-IP 17.x and future versions of BIG-IP TMOS including 21.x. Software version support of.",
+    "content_hash": "113c84bea9eadeae",
+    "hierarchy": [
+      "06. Product Lifecycle, Releases & Roadmaps",
+      "BIG-IP & F5OS Software Release Matrices"
+    ],
+    "tags": {
+      "products": [
+        "big-ip",
+        "tmos"
+      ],
+      "topics": [
+        "lifecycle-matrix"
+      ],
+      "source_types": [
+        "knowledge-base"
+      ]
+    },
+    "visit_count": 16,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "06. Product Lifecycle, Releases & Roadmaps"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://github.com/F5Networks/k8s-bigip-ctlr",
+    "title": "GitHub - F5Networks/k8s-bigip-ctlr (CIS)",
+    "description": "Repository for F5 Container Ingress Services for Kubernetes & OpenShift. - F5Networks/k8s-bigip-ctlr. Authoritative reference for GitHub Repositories & Open Source Tools.",
+    "content_summary": "This resource for GitHub - F5Networks/k8s-bigip-ctlr (CIS) (07. Lab Environments, Demos & Developer Ecosystem — GitHub Repositories & Open Source Tools) details: Reload to refresh your session. You signed out in another tab or window. Reload to refresh your session. You switched accounts on another tab or window. Reload to refresh your session. Dismiss alert {{ message }} master Branches Tags Go to file Code Open more actions menu Latest commit History 3,080 Commits 3,080 Commits Folders and files Name Name Last commit message Last commit date .github .github build-tools build-tools docs docs f5-bigip-ctlr-operator f5-bigip-ctlr-operator helm-charts helm-charts .approvals.json .approvals.json .f5license .f5license .gitignore .gitignore .gitlab-ci.yml .gitlab-ci.yml CONTRIBUTING.md CONTRIBUTING.md DEVEL.md DEVEL.md LICENSE LICENSE README.md README.md SUPPORT.md SUPPORT.md all_attributions.txt all_attributions.txt azure-pipelines.yaml azure-pipelines.yaml junit.tpl junit.tpl next-version.txt next-version.txt requirements.docs.txt requirements.docs.txt View all files Repository files navigation CIS remains actively developed and fully supported by F5. Effective April 2026, this repository is archived and no longer publishes source code. New releases continue to be delivered through GitHub Releases , Docker Hub , and the Red Hat Container Registry , with support available through standard F5 Support. If you have questions, feature requests, bug.",
+    "content_hash": "15c012e72a6722a3",
+    "hierarchy": [
+      "07. Lab Environments, Demos & Developer Ecosystem",
+      "GitHub Repositories & Open Source Tools"
+    ],
+    "tags": {
+      "products": [
+        "big-ip",
+        "tmos"
+      ],
+      "topics": [],
+      "source_types": [
+        "github"
+      ]
+    },
+    "visit_count": 8,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "07. Lab Environments, Demos & Developer Ecosystem"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": false,
+    "icon": ""
+  },
+  {
+    "url": "https://www.f5.com/resources/demos",
+    "title": "Demo Center",
+    "description": "Stay current to protect your environment with F5 critical releases. Download now F5 Product Demo Center Explore F5’s latest solutions through demos on delivery, security, and XOps.",
+    "content_summary": "This resource for Demo Center (07. Lab Environments, Demos & Developer Ecosystem — UDF Lab Environments & Demos) details: Stay current to protect your environment with F5 critical releases. Download now F5 Product Demo Center Explore F5’s latest solutions through demos on delivery, security, and XOps. Featured demos ANALYTICS & INSIGHTS PRODUCT TOUR F5 Insight for ADSP Fleet Management Featured products: • F5 rSeries Appliance • F5 VELOS Chassis System • BIG-IP Local Traffic Manager API SECURITY DEMO VIDEO Explore F5 API Discovery and Security Essentials Featured products: • F5 Distributed Cloud API Security • F5 WAF for BIG-IP • F5 WAF for NGINX ANALYTICS & INSIGHTS PRODUCT TOUR Take a quick tour of centralized visibility for NGINX instances Featured products: • NGINX One AI SECURITY DEMO VIDEO Securing multi-agent systems with F5 AI Guardrails Featured products: • F5 AI Guardrails See F5 in action Discover F5's latest innovations through engaging demos across Delivery, Security, and XOps domains. Interact directly with tools and solutions or browse videos to gain deeper insight into how our products work in action. All demos ( 96 ) Sort.",
+    "content_hash": "4e656a00647d38d5",
+    "hierarchy": [
+      "07. Lab Environments, Demos & Developer Ecosystem",
+      "UDF Lab Environments & Demos"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [
+        "application-security"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 8,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "07. Lab Environments, Demos & Developer Ecosystem"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://www.f5.com/",
+    "title": "Hybrid Multicloud App Security & Delivery for the AI Era",
+    "description": "Unified delivery & security for applications, APIs, & AI workloads across any infrastructure, trusted by 85% of the Fortune 500. Secure your digital ecosystem.",
+    "content_summary": "This resource for Hybrid Multicloud App Security & Delivery for the AI Era (08. Internal Sales Engineering & Enablement — Field Enablement, Uberdecks & Highspot) details: Stay current to protect your environment with F5 critical releases. Download now Gartner® Emerging Market Quadrant for AI Application Security In its evaluation of the F5 AI Security Platform, Gartner recognized F5 as one of the only two Market Shapers in its inaugural Emerging Market Quadrant (eMQ) for AI Application Security as of September 2026. Eliminate the guesswork of AI security Learn what Gartner determined every enterprise needs to secure AI Evaluate the market on a common criteria See where every vendor landed and why Get the report Explore the F5 AI Security Platform BLOG What infrastructure efficiency means at service provider scale BLOG When patching can't keep pace and protection can't wait REPORT F5 was named a Leader in the IDC MarketScape: Worldwide WAAP Platforms 2026 Vendor Assessment F5 is trusted by more than 80% of the Fortune 500 Source: Fortune.com Discover how businesses thrive with F5 Previous slide Rackspace boosts private cloud agility with virtualization \"By making it easy, with a trusted brand.",
+    "content_hash": "79e29884975f1d9f",
+    "hierarchy": [
+      "08. Internal Sales Engineering & Enablement",
+      "Field Enablement, Uberdecks & Highspot"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [
+        "application-security",
+        "artificial-intelligence",
+        "sales-enablement"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 13,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "08. Internal Sales Engineering & Enablement"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://www.f5.com/industries/banking-financial-services-and-insurance#resources",
+    "title": "Banking and Financial Services",
+    "description": "F5 solutions secure digital transactions and build customer trust for banking and financial services. Authoritative reference for Field Enablement, Uberdecks & Highspot.",
+    "content_summary": "This resource for Banking and Financial Services (08. Internal Sales Engineering & Enablement — Field Enablement, Uberdecks & Highspot) details: Stay current to protect your environment with F5 critical releases. Download now Banking and Financial Services Banking and Financial Services are scaling AI, defending against faster attacks, and proving they can stay resilient and sovereign under rising regulatory pressure. F5 helps you deliver and secure every app, API, model, and agent, wherever it runs. 2026 State of Application Strategy for BFSI report Show how F5 helps Fannie Mae Digital sovereignty and resilience define financial services Financial institutions face AI-accelerated fraud, an expanding API and AI attack surface, and growing pressure to control where data lives and how services stay available across jurisdictions. Sovereignty has moved from a compliance checkbox to a strategic priority, shaped as much by geopolitics as by regulation. The F5 Application Delivery and Security Platform (ADSP) delivers high performance and security for financial applications across on-premises, cloud, and edge: mitigating fraud risk, maximizing service availability, and keeping sensitive data under your control. Better Financial Services Account holders expect secure and performant apps.",
+    "content_hash": "b7c3b04c46bd0bc3",
+    "hierarchy": [
+      "08. Internal Sales Engineering & Enablement",
+      "Field Enablement, Uberdecks & Highspot"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [
+        "sales-enablement"
+      ],
+      "source_types": [
+        "official-docs"
+      ]
+    },
+    "visit_count": 12,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "08. Internal Sales Engineering & Enablement"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": true,
+    "icon": ""
+  },
+  {
+    "url": "https://kubernetes.io/docs/tasks/administer-cluster/namespaces/",
+    "title": "Share a Cluster with Namespaces | Kubernetes",
+    "description": "This page shows how to view, work in, and delete namespaces. The page also shows how to use Kubernetes namespaces to subdivide your cluster.",
+    "content_summary": "This resource for Share a Cluster with Namespaces | Kubernetes (09. External Engineering, Protocols & Tools — Kubernetes, Containers & Cloud Native) details: Share a Cluster with Namespaces This page shows how to view, work in, and delete namespaces . The page also shows how to use Kubernetes namespaces to subdivide your cluster. Before you begin Have an existing Kubernetes cluster . You have a basic understanding of Kubernetes Pods , Services , and Deployments . Viewing namespaces List the current namespaces in a cluster using: kubectl get namespaces NAME STATUS AGE default Active 11d kube-node-lease Active 11d kube-public Active 11d kube-system Active 11d Kubernetes starts with four initial namespaces: default The default namespace for objects with no other namespace kube-node-lease This namespace holds Lease objects associated with each node. Node leases allow the kubelet to send heartbeats so that the control plane can detect node failure. kube-public This namespace is created automatically and is readable by all users (including those not authenticated). This namespace is mostly reserved for cluster usage, in case that some resources should be visible and readable publicly throughout the whole cluster. The public. Key commands and paths referenced in the article include: kubectl get namespaces NAME STATUS AGE default Active 11d kube-node-lease Active 11d kube-public Active 11d kube-system Active 11d Kubernetes starts with four initial namespaces, kubectl get namespaces , kubectl describe namespaces , kubectl create -f .",
+    "content_hash": "8c4a3d32d589affc",
+    "hierarchy": [
+      "09. External Engineering, Protocols & Tools",
+      "Kubernetes, Containers & Cloud Native"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [
+        "high-availability"
+      ],
+      "source_types": [
+        "external-resource"
+      ]
+    },
+    "visit_count": 3,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "09. External Engineering, Protocols & Tools"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": false,
+    "icon": ""
+  },
+  {
+    "url": "https://kubernetes.io/docs/concepts/services-networking/ingress/",
+    "title": "Ingress - Kubernetes",
+    "description": "Make your HTTP (or HTTPS) network service available using a protocol-aware configuration mechanism, that understands web concepts like URIs, hostnames, paths, and more.",
+    "content_summary": "This resource for Ingress - Kubernetes (09. External Engineering, Protocols & Tools — Kubernetes, Containers & Cloud Native) details: Ingress Make your HTTP (or HTTPS) network service available using a protocol-aware configuration mechanism, that understands web concepts like URIs, hostnames, paths, and more. The Ingress concept lets you map traffic to different backends based on rules you define via the Kubernetes API. Feature state: Stable since Kubernetes v1.19 An API object that manages external access to the services in a cluster, typically HTTP. Ingress may provide load balancing, SSL termination and name-based virtual hosting. Note: The Kubernetes project recommends using Gateway instead of Ingress . The Ingress API has been frozen. This means that: The Ingress API is generally available, and is subject to the stability guarantees for generally available APIs. The Kubernetes project has no plans to remove Ingress from Kubernetes. The Ingress API is no longer being developed, and will have no further changes or updates made to it. Key commands and paths referenced in the article include: kubectl describe ingress ingress-resource-backend Name.",
+    "content_hash": "862ee640fe45501c",
+    "hierarchy": [
+      "09. External Engineering, Protocols & Tools",
+      "Kubernetes, Containers & Cloud Native"
+    ],
+    "tags": {
+      "products": [
+        "general-or-tools"
+      ],
+      "topics": [],
+      "source_types": [
+        "external-resource"
+      ]
+    },
+    "visit_count": 3,
+    "add_date": "1729000000",
+    "legacy_path": [
+      "09. External Engineering, Protocols & Tools"
+    ],
+    "requires_vpn": false,
+    "is_official_f5": false,
+    "icon": ""
+  }
+]

@@ -2750,6 +2750,10 @@ class BookmarkInspector:
                 else enriched.get("notes", "")
             )
         )
+
+        op_label = "update" if existing_idx is not None else "add"
+        backup_file = save_catalog_backup(catalog, self._workspace_dir, op_label)
+
         target_bm = {
             "url": final_url,
             "title": enriched["title"],
@@ -2797,8 +2801,38 @@ class BookmarkInspector:
             "success": True,
             "is_existing": existing_idx is not None,
             "total_bookmarks": len(catalog),
+            "backup_path": backup_file,
             "bookmark": {k: v for k, v in target_bm.items() if k != "icon"}
         }
+
+MAX_CATALOG_BACKUPS = 10
+
+def save_catalog_backup(catalog: list, workspace_dir: str, operation: str = "update", max_backups: int = MAX_CATALOG_BACKUPS) -> str:
+    """Write a timestamped catalog snapshot to archive/backups/ and prune older snapshots beyond max_backups."""
+    backup_dir = os.path.join(workspace_dir, "archive", "backups")
+    os.makedirs(backup_dir, exist_ok=True)
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    backup_file = os.path.join(backup_dir, f"bookmarks_catalog_pre_{operation}_{timestamp}.json")
+    with open(backup_file, "w", encoding="utf-8") as f:
+        json.dump(catalog, f, indent=2, ensure_ascii=False)
+    try:
+        snaps = sorted(
+            [
+                os.path.join(backup_dir, fn)
+                for fn in os.listdir(backup_dir)
+                if fn.startswith("bookmarks_catalog") and (fn.endswith(".json") or ".json.bak" in fn)
+            ],
+            key=lambda p: os.path.getmtime(p),
+        )
+        if len(snaps) > max_backups:
+            for old_snap in snaps[:-max_backups]:
+                try:
+                    os.remove(old_snap)
+                except OSError:
+                    pass
+    except Exception:
+        pass
+    return backup_file
 
 def normalize_url_for_comparison(url_str: str) -> str:
     """Normalize URL for duplicate detection (handles trailing slashes, www, case, and scheme)."""
@@ -3023,14 +3057,9 @@ class AIAgentHandler(BaseHTTPRequestHandler):
 
                 initial_count = len(catalog)
 
-                # 2. Backup catalog
+                # 2. Backup catalog (with automatic retention rotation)
                 workspace_dir = os.path.dirname(os.path.abspath(CATALOG_PATH))
-                backup_dir = os.path.join(workspace_dir, "archive", "backups")
-                os.makedirs(backup_dir, exist_ok=True)
-                timestamp = time.strftime("%Y%m%d_%H%M%S")
-                backup_file = os.path.join(backup_dir, f"bookmarks_catalog_pre_delete_{timestamp}.json")
-                with open(backup_file, "w", encoding="utf-8") as f:
-                    json.dump(catalog, f, indent=2, ensure_ascii=False)
+                backup_file = save_catalog_backup(catalog, workspace_dir, "delete")
 
                 # 3. Filter catalog (match exact URL, cleaned URL without #:~:text=, or normalized URL)
                 from batch_enrich_all import clean_bookmark_url
@@ -3277,13 +3306,8 @@ class AIAgentHandler(BaseHTTPRequestHandler):
                         needs_update = (content_changed or desc_changed or title_improved or vpn_changed or official_changed or tags_enriched)
 
                     if needs_update:
-                        # Create backup before updating existing entry
-                        backup_dir = os.path.join(workspace_dir, "archive", "backups")
-                        os.makedirs(backup_dir, exist_ok=True)
-                        timestamp = time.strftime("%Y%m%d_%H%M%S")
-                        backup_file = os.path.join(backup_dir, f"bookmarks_catalog_pre_update_{timestamp}.json")
-                        with open(backup_file, "w", encoding="utf-8") as f:
-                            json.dump(catalog, f, indent=2, ensure_ascii=False)
+                        # Create backup before updating existing entry (with automatic retention rotation)
+                        backup_file = save_catalog_backup(catalog, workspace_dir, "update")
 
                         # Tracking update reasons
                         reasons = []
@@ -3363,12 +3387,7 @@ class AIAgentHandler(BaseHTTPRequestHandler):
 
                 else:
                     # Brand new bookmark - not in catalog
-                    backup_dir = os.path.join(workspace_dir, "archive", "backups")
-                    os.makedirs(backup_dir, exist_ok=True)
-                    timestamp = time.strftime("%Y%m%d_%H%M%S")
-                    backup_file = os.path.join(backup_dir, f"bookmarks_catalog_pre_add_{timestamp}.json")
-                    with open(backup_file, "w", encoding="utf-8") as f:
-                        json.dump(catalog, f, indent=2, ensure_ascii=False)
+                    backup_file = save_catalog_backup(catalog, workspace_dir, "add")
 
                     resolved_new_notes = custom_notes if has_explicit_notes else enriched.get("notes", "")
                     target_bm = {

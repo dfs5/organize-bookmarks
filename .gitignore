@@ -6,8 +6,9 @@ favorites_product_frequency_organized.html
 ai_agent_server/bookmarks_content_cache.json
 ai_agent_server/bookmarks_verified_metadata.json
 
-# Local Server Config (use ai_agent_server.conf.example as template)
+# Local Server & LaunchAgent Configs (use *.example as templates)
 ai_agent_server/ai_agent_server.conf
+com.f5.bookmarks.sync.plist
 
 # Runtime Logs & PIDs
 *.log

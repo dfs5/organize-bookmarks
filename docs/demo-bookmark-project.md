@@ -3,8 +3,8 @@
 This document provides a complete architectural and operational overview of the **Bookmarks Intelligence Platform** (`organize-bookmarks`) — how the interactive showcase website, data stores, enrichment pipelines, local AI Agent Server, browser history synchronization, and Antigravity AI agent memory/skill subsystems are built and how their workflows operate together.
 
 > **Companion Runtime Deep-Dives:**
-> - 📥 [**Adding a Bookmark Runtime Analysis (`demo-adding-bookmark.md`)**](../demo-adding-bookmark.md) — Line-by-line trace of live `/browser` CDP inspection, heuristic/LLM enrichment, 3-store persistence, and HTML regeneration (`FE-POST-3970`).
-> - 🔍 [**Searching via Ask AI Copilot Runtime Analysis (`demo-searching-bookmarks.md`)**](../demo-searching-bookmarks.md) — Line-by-line trace of Vertex AI intent extraction, hybrid BM25 + product-scope retrieval, deep page-content verification, and grounded answer synthesis (`FE-POST-4037`, `LLM-4038`, `LLM-4039`).
+> - 📥 [**Adding a Bookmark Runtime Analysis (`demo-adding-bookmark.md`)**](demo-adding-bookmark.md) — Line-by-line trace of live `/browser` CDP inspection, heuristic/LLM enrichment, 3-store persistence, and HTML regeneration (`FE-POST-3970`).
+> - 🔍 [**Searching via Ask AI Copilot Runtime Analysis (`demo-searching-bookmarks.md`)**](demo-searching-bookmarks.md) — Line-by-line trace of Vertex AI intent extraction, hybrid BM25 + product-scope retrieval, deep page-content verification, and grounded answer synthesis (`FE-POST-4037`, `LLM-4038`, `LLM-4039`).
 
 ---
 
@@ -142,7 +142,7 @@ Every bookmark carries structured arrays across three orthogonal dimensions conf
   - Safely copies the locked Microsoft Edge SQLite `History` database (`~/Library/Application Support/Microsoft Edge/Default/History`) to a temporary file and queries `urls.visit_count` and `last_visit_time`.
   - Reads Edge's `Bookmarks` JSON file to detect newly bookmarked URLs in the browser.
   - Updates `visit_count` across [`bookmarks_catalog.json`](../bookmarks_catalog.json) and triggers HTML regeneration.
-  - Automated weekly via macOS `launchd` ([`com.f5.bookmarks.sync.plist`](../com.f5.bookmarks.sync.plist) → [`run_sync_standalone.sh`](../run_sync_standalone.sh), every Monday at `09:00`).
+  - Automated weekly via macOS `launchd` ([`com.f5.bookmarks.sync.plist.example`](../com.f5.bookmarks.sync.plist.example) → [`run_sync_standalone.sh`](../run_sync_standalone.sh), every Monday at `09:00`).
 
 ---
 
@@ -255,7 +255,7 @@ python3 generate_dark_showcase.py
 To synchronize historical visit counts (`visit_count`) and newly saved browser bookmarks from Microsoft Edge:
 
 ```bash
-# Run manually at any time (or automatically every Monday @ 09:00 via com.f5.bookmarks.sync.plist)
+# Run manually at any time (or automatically every Monday @ 09:00 via com.f5.bookmarks.sync.plist.example)
 python3 sync_edge_history_bookmarks.py
 ```
 

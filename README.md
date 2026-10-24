@@ -190,9 +190,9 @@ python3 sync_edge_history_bookmarks.py
 - [**AI Agent Server Maintenance Guide (`ai_agent_server/MAINTENANCE.md`)**](ai_agent_server/MAINTENANCE.md) — Deep dive into `ai_agent_server.conf`, health checks, LLM provider cascading, traffic logging, and troubleshooting.
 - [**Agent Rules & Code Map (`AGENTS.md`)**](AGENTS.md) — Context guardrails, canonical data schema, `/browser` inspection workflow, and line-level code index.
 - **Architecture & Workflow Deep Dives (`docs/`)**:
-  - [**Complete Project Architecture (`docs/demo-bookmark-project-human-readable.md`)**](docs/demo-bookmark-project-human-readable.md) *(and [detailed reference](docs/demo-bookmark-project.md))*
-  - [**Adding a Bookmark End-to-End Trace (`docs/demo-adding-bookmark-human-readable.md`)**](docs/demo-adding-bookmark-human-readable.md) *(and [detailed trace](docs/demo-adding-bookmark.md))*
-  - [**Searching Bookmarks & AI Copilot Trace (`docs/demo-searching-bookmarks-human-readable.md`)**](docs/demo-searching-bookmarks-human-readable.md) *(and [detailed trace](docs/demo-searching-bookmarks.md))*
+  - [**Complete Project Architecture (`docs/demo-bookmark-project.md`)**](docs/demo-bookmark-project.md)
+  - [**Adding a Bookmark End-to-End Trace (`docs/demo-adding-bookmark.md`)**](docs/demo-adding-bookmark.md)
+  - [**Searching Bookmarks & AI Copilot Trace (`docs/demo-searching-bookmarks.md`)**](docs/demo-searching-bookmarks.md)
   - **UI Screenshots (`docs/`)**:
     - [`docs/screenshot-showcase-dashboard.png`](docs/screenshot-showcase-dashboard.png) — Main Dark Showcase Dashboard & Recently Added Grid
     - [`docs/screenshot-add-bookmark-modal.png`](docs/screenshot-add-bookmark-modal.png) — Add Bookmark with Deep AI Inspection Modal

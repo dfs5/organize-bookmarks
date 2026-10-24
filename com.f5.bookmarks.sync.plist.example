@@ -19,9 +19,9 @@
         <integer>0</integer>
     </dict>
     <key>StandardOutPath</key>
-    <string>/path/to/organize-bookmarks/sync_stdout.log</string>
+    <string>/path/to/organize-bookmarks/sync.log</string>
     <key>StandardErrorPath</key>
-    <string>/path/to/organize-bookmarks/sync_stderr.log</string>
+    <string>/path/to/organize-bookmarks/sync.log</string>
     <key>RunAtLoad</key>
     <false/>
 </dict>

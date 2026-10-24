@@ -14,7 +14,8 @@ ai_agent_server/ai_agent_server.conf
 ai_agent_server/*.log
 ai_agent_server/.ai_server.pid
 
-# Agent Runtime State & Vector DB
+# Agent Runtime State, Local Project Memory & Vector DB
+.agents/memory/project_memory.md
 .agents/memory/memory_index.sqlite
 .agents/memory/memory_index.sqlite-*
 .agents/memory/session_state.json

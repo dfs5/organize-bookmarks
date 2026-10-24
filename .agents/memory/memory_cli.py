@@ -18,6 +18,7 @@ import argparse
 import datetime
 import json
 import os
+import shutil
 import sys
 
 MEMORY_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +29,14 @@ from memory_indexer import MemoryVectorStore
 
 SESSION_FILE = os.path.join(MEMORY_DIR, "session_state.json")
 PROJECT_FILE = os.path.join(MEMORY_DIR, "project_memory.md")
+PROJECT_EXAMPLE_FILE = os.path.join(MEMORY_DIR, "project_memory.example.md")
+
+
+def ensure_project_memory() -> str:
+    """Bootstraps project_memory.md from project_memory.example.md on fresh clones."""
+    if not os.path.exists(PROJECT_FILE) and os.path.exists(PROJECT_EXAMPLE_FILE):
+        shutil.copyfile(PROJECT_EXAMPLE_FILE, PROJECT_FILE)
+    return PROJECT_FILE
 
 MAX_NOTES = 12
 MAX_COMPLETED = 10
@@ -94,6 +103,7 @@ def format_ephemeral_snapshot(state: dict) -> str:
 
 
 def cmd_status(_args):
+    ensure_project_memory()
     state = load_session()
     print(format_ephemeral_snapshot(state))
     if os.path.exists(PROJECT_FILE):
@@ -156,6 +166,7 @@ def cmd_clear_notes(_args):
 
 
 def cmd_compact(args):
+    ensure_project_memory()
     state = load_session()
     today = datetime.date.today().isoformat()
     summary = args.summary

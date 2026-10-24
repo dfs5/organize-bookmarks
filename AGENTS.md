@@ -51,7 +51,7 @@
 
 ## 2. Canonical Data Schema & Taxonomy
 
-### `bookmarks_catalog.json` (696 Curated Bookmarks)
+### `bookmarks_catalog.json` (Initialized from `bookmarks_catalog.example.json` on Fresh Clones)
 A JSON `list` of bookmark objects. Each item has:
 - `url` (`str`), `previous_url` (`str`, optional): Canonical URL and pre-redirect/legacy URL.
 - `title` (`str`), `description` (`str`), `content_summary` (`str`), `content_hash` (`str`).

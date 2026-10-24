@@ -222,6 +222,14 @@ class MemoryVectorStore:
 
         for rel_path in DEFAULT_INDEXED_FILES:
             abs_path = os.path.join(WORKSPACE_ROOT, rel_path)
+            if not os.path.exists(abs_path) and rel_path == ".agents/memory/project_memory.md":
+                example_abs = os.path.join(WORKSPACE_ROOT, ".agents/memory/project_memory.example.md")
+                if os.path.exists(example_abs):
+                    try:
+                        import shutil
+                        shutil.copyfile(example_abs, abs_path)
+                    except Exception:
+                        abs_path = example_abs
             if not os.path.exists(abs_path):
                 continue
             stats["files"] += 1

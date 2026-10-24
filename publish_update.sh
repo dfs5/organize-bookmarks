@@ -165,6 +165,10 @@ exec "$ROOT_DIR/publish_update.sh" --verify-staged-only
         print("   Installed .git/hooks/pre-commit security gate.")
 PYEOF
 
+# 1c. Rebuild docs/index.html live GitHub Pages demo from bookmarks_catalog.example.json
+BOOKMARKS_CATALOG_PATH=bookmarks_catalog.example.json BOOKMARKS_SHOWCASE_OUTPUT=docs/index.html python3 generate_dark_showcase.py >/dev/null
+echo "   Rebuilt docs/index.html (GitHub Pages live demo from bookmarks_catalog.example.json)."
+
 # ------------------------------------------------------------------------------
 # STEP 2: Sanitize Tracked Markdown Files
 # ------------------------------------------------------------------------------
@@ -246,6 +250,7 @@ home_dir = os.path.expanduser("~")
 
 issues = []
 MAX_TEXT_BYTES = 250_000
+MAX_DEMO_HTML_BYTES = 500_000
 MAX_DOC_ASSET_BYTES = 25_000_000
 BINARY_DOC_EXTS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".svg", ".ico")
 
@@ -254,9 +259,10 @@ for p in files_to_check:
         continue
     sz = os.path.getsize(p)
     is_doc_asset = p.startswith("docs/") and p.lower().endswith(BINARY_DOC_EXTS)
-    limit = MAX_DOC_ASSET_BYTES if is_doc_asset else MAX_TEXT_BYTES
+    is_demo_html = (p == "docs/index.html")
+    limit = MAX_DOC_ASSET_BYTES if is_doc_asset else (MAX_DEMO_HTML_BYTES if is_demo_html else MAX_TEXT_BYTES)
     if sz > limit:
-        limit_label = "25 MB" if is_doc_asset else "250 KB"
+        limit_label = "25 MB" if is_doc_asset else ("500 KB" if is_demo_html else "250 KB")
         issues.append(f"Oversized file (>{limit_label}): {p} ({sz:,} bytes)")
 
     if p.lower().endswith(BINARY_DOC_EXTS):

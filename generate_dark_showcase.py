@@ -2,8 +2,9 @@ import json
 import os
 import re
 
-CATALOG_PATH = "bookmarks_catalog.json" if os.path.exists("bookmarks_catalog.json") else "bookmarks_catalog.example.json"
-OUTPUT_HTML = "bookmarks_showcase.html"
+DEFAULT_CATALOG = "bookmarks_catalog.json" if os.path.exists("bookmarks_catalog.json") else "bookmarks_catalog.example.json"
+CATALOG_PATH = os.environ.get("BOOKMARKS_CATALOG_PATH", DEFAULT_CATALOG)
+OUTPUT_HTML = os.environ.get("BOOKMARKS_SHOWCASE_OUTPUT", "bookmarks_showcase.html")
 
 with open(CATALOG_PATH, "r", encoding="utf-8") as f:
     catalog = json.load(f)

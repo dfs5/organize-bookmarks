@@ -3,6 +3,8 @@
 A zero-dependency Python knowledge management, taxonomy curation, and hybrid AI search platform for organizing engineering bookmarks into an interactive dark-mode showcase (`bookmarks_showcase.html`) backed by a local AI Copilot server (`ai_agent_server.py`).
 
 > **📽️ Project Presentation Deck**: Looking for a visual executive & architectural overview? Read the 11-slide presentation [**Taming the Bookmark Black Hole: Building a Local AI-Powered Bookmarks Intelligence Platform (`docs/taming-the-bookmark-black-hole-presentation.pdf`)**](docs/taming-the-bookmark-black-hole-presentation.pdf) covering the 1,000-bookmark problem, the 3-tier canonical data layer, live browser CDP ingestion (*"Look, Don't Scrape"*), the 3-stage hybrid BM25 + LLM retrieval funnel, and real-world system profiling insights.
+>
+> **🌐 Live Interactive Demo (GitHub Pages)**: Try the interactive dark-mode showcase directly in your browser (built from the 18 public sample bookmarks in `bookmarks_catalog.example.json`, with client-side filtering and offline AI Copilot search fallback): **[`https://dfs5.github.io/organize-bookmarks/`](https://dfs5.github.io/organize-bookmarks/)** *(source: [`docs/index.html`](docs/index.html))*.
 
 ---
 

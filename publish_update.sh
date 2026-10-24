@@ -245,14 +245,22 @@ user_parts = [p for p in re.split(r"[^a-zA-Z0-9]+", user_name) if len(p) >= 4]
 home_dir = os.path.expanduser("~")
 
 issues = []
-MAX_BYTES = 250_000
+MAX_TEXT_BYTES = 250_000
+MAX_DOC_ASSET_BYTES = 25_000_000
+BINARY_DOC_EXTS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".svg", ".ico")
 
 for p in files_to_check:
     if not os.path.exists(p):
         continue
     sz = os.path.getsize(p)
-    if sz > MAX_BYTES:
-        issues.append(f"Oversized file (>250 KB): {p} ({sz:,} bytes)")
+    is_doc_asset = p.startswith("docs/") and p.lower().endswith(BINARY_DOC_EXTS)
+    limit = MAX_DOC_ASSET_BYTES if is_doc_asset else MAX_TEXT_BYTES
+    if sz > limit:
+        limit_label = "25 MB" if is_doc_asset else "250 KB"
+        issues.append(f"Oversized file (>{limit_label}): {p} ({sz:,} bytes)")
+
+    if p.lower().endswith(BINARY_DOC_EXTS):
+        continue
 
     with open(p, "r", encoding="utf-8", errors="ignore") as f:
         txt = f.read()

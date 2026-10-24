@@ -2,6 +2,8 @@
 
 A zero-dependency Python knowledge management, taxonomy curation, and hybrid AI search platform for organizing engineering bookmarks into an interactive dark-mode showcase (`bookmarks_showcase.html`) backed by a local AI Copilot server (`ai_agent_server.py`).
 
+> **📽️ Project Presentation Deck**: Looking for a visual executive & architectural overview? Read the 11-slide presentation [**Taming the Bookmark Black Hole: Building a Local AI-Powered Bookmarks Intelligence Platform (`docs/taming-the-bookmark-black-hole-presentation.pdf`)**](docs/taming-the-bookmark-black-hole-presentation.pdf) covering the 1,000-bookmark problem, the 3-tier canonical data layer, live browser CDP ingestion (*"Look, Don't Scrape"*), the 3-stage hybrid BM25 + LLM retrieval funnel, and real-world system profiling insights.
+
 ---
 
 ## ✨ Key Capabilities
@@ -14,6 +16,39 @@ A zero-dependency Python knowledge management, taxonomy curation, and hybrid AI 
   - **Stage 3 — Deep Content Verification & Grounded Synthesis**: Verifies candidate relevance against cached/extracted page content and generates a grounded technical answer citing `[1]`, `[2]`, etc.
 - **🌐 Live Browser CDP Bookmark Ingestion**: Inspects newly added bookmarks via an active Chrome/Edge DevTools Protocol (CDP) session or `/browser` subagent payload—handling JavaScript SPAs, SSO sessions, and `#fragment` deep links—and updates the catalog + HTML outputs in a single step.
 - **📊 Safe Browser History Visit Sync (`sync_edge_history_bookmarks.py`)**: Reads local Microsoft Edge and Google Chrome SQLite history databases (via temp copies to avoid file locks) to update `visit_count` rankings on existing curated bookmarks without injecting unverified history URLs.
+
+---
+
+## 📸 Visual Walkthrough & UI Screenshots
+
+### 1. Interactive Dark Showcase Dashboard & Multi-Dimensional Filtering
+![F5 Bookmarks & Knowledge Catalog Dashboard](docs/screenshot-showcase-dashboard.png)
+
+The main dashboard (`bookmarks_showcase.html`) renders the entire curated catalog into a fast, zero-latency dark glassmorphism interface:
+- **Live Catalog Telemetry Header**: Displays real-time counts for total verified bookmarks, VPN-gated internal resources (`Requires VPN`), the `9 Pillars` taxonomy, and `Active Visited` links synced from browser history.
+- **Instant Search & Quick-Filter Pills**: Supports instant client-side filtering (`/` or `⌘K` to focus) combined with one-click filter chips for **Access Scope** (`Needs VPN`), **Core Product Ecosystems** (`BIG-IP & TMOS`, `NGINX`, `F5 XC`, `Workforce AI`), **High-Frequency Topics** (`Sizing & Capacity`, `Security & WAF`, `AI & Guardrails`), and **Activity** (`Recently Added`, `Frequently Visited`).
+- **Rich Bookmark Cards**: Each card displays the domain favicon, cleaned title, concise 110–180 character description, custom user note badge (amber pill, e.g., `amadeus AI initiatives`), historical browser visit count badge (`18x`), VPN indicator, and color-coded **Product / Topic / Source Type** tags—while holding a 150–250 word technical summary under the hood for BM25 and AI search.
+- **Floating Pillar Jump Bar**: Pinned at the bottom of the viewport for one-click navigation across all 9 canonical strategic pillars.
+
+---
+
+### 2. Add Bookmark Modal with Deep AI & Live Browser Inspection
+![Add Bookmark with Deep AI Inspection Modal](docs/screenshot-add-bookmark-modal.png)
+
+Clicking **`+ Add Bookmark`** opens the live ingestion workflow backed by `POST /api/bookmarks/add` on the local AI Agent Server:
+- **Look, Don't Scrape Inspection (`Inspect & Ingest`)**: Paste any documentation, KB article, GitHub repo, or internal portal URL. The server inspects the rendered DOM (via live Chrome/Edge CDP or `/browser` inspection), extracts headings and body content, and automatically synthesizes a clean title, 110–180 char description, 150–250 word technical summary, 9-pillar hierarchy placement, and multi-dimensional tags.
+- **Custom User Notes**: Attach optional personal context or customer/project reminders (`Custom Notes`) that are persisted in `bookmarks_catalog.json`, displayed as amber badges on the card, and weighted heavily in BM25 & AI Copilot retrieval.
+- **Automated Backup & Multi-Target Sync**: Every addition or deletion automatically snapshots `bookmarks_catalog.json` into `archive/backups/`, updates the local browser bookmarks profile (`Bookmarks`), and regenerates both `bookmarks_showcase.html` and the Netscape bookmark export (`favorites_product_frequency_organized.html`).
+
+---
+
+### 3. Bookmarks AI Copilot Drawer & Grounded Synthesis
+![Bookmarks AI Copilot Drawer](docs/screenshot-ai-copilot-drawer.png)
+
+Clicking **`Ask AI Copilot ⌘K`** opens the slide-out conversational search and synthesis drawer powered by `ai_agent_server.py`:
+- **3-Stage Hybrid Retrieval & Grounded Answers**: When asking a natural-language question (such as `"big-ip sw update guidance"`), the server extracts structured intent, scores the catalog via BM25 + taxonomy + visit frequency, verifies full-text cache relevance (`must_mention` lexical guardrails), and generates a structured Markdown guide with inline citations (`K84205182`, `K5903`) and recommended action sequences.
+- **Product Scope & Access Constraints**: Scope AI retrieval to specific portfolios using the top selector bar (`ADSP (All)`, `AISP (All AI)`, `BIG-IP`, `NGINX`, `F5 XC`) and toggle **`VPN Only`** or **`Frequently Visited (5+)`** to prioritize battle-tested engineering links.
+- **Interactive Citation Cards**: Below the synthesized response, the Copilot renders the exact verified bookmark cards used to ground the answer, complete with **`Locate on page`** buttons that scroll and highlight the corresponding card directly in the main showcase grid.
 
 ---
 
@@ -148,10 +183,15 @@ python3 sync_edge_history_bookmarks.py
 
 ## 📚 Documentation Index
 
-- [**Project Maintenance Guide (`MAINTENANCE.md`)**](MAINTENANCE.md) — Quick reference for server commands, showcase rebuilds, and persistent session memory.
+- [**📽️ Project Presentation Deck (`docs/taming-the-bookmark-black-hole-presentation.pdf`)**](docs/taming-the-bookmark-black-hole-presentation.pdf) — 11-slide visual presentation: *"Taming the Bookmark Black Hole: Building a Local AI-Powered Bookmarks Intelligence Platform"* (problem statement, system blueprint, canonical data layer, live browser ingestion, 3-stage hybrid retrieval funnel, and log autopsy).
+- [**Project Maintenance Guide (`MAINTENANCE.md`)**](MAINTENANCE.md) — Quick reference for server commands, showcase rebuilds, automated GitHub publishing (`./publish_update.sh`), and persistent session memory.
 - [**AI Agent Server Maintenance Guide (`ai_agent_server/MAINTENANCE.md`)**](ai_agent_server/MAINTENANCE.md) — Deep dive into `ai_agent_server.conf`, health checks, LLM provider cascading, traffic logging, and troubleshooting.
 - [**Agent Rules & Code Map (`AGENTS.md`)**](AGENTS.md) — Context guardrails, canonical data schema, `/browser` inspection workflow, and line-level code index.
 - **Architecture & Workflow Deep Dives (`docs/`)**:
   - [**Complete Project Architecture (`docs/demo-bookmark-project-human-readable.md`)**](docs/demo-bookmark-project-human-readable.md) *(and [detailed reference](docs/demo-bookmark-project.md))*
   - [**Adding a Bookmark End-to-End Trace (`docs/demo-adding-bookmark-human-readable.md`)**](docs/demo-adding-bookmark-human-readable.md) *(and [detailed trace](docs/demo-adding-bookmark.md))*
   - [**Searching Bookmarks & AI Copilot Trace (`docs/demo-searching-bookmarks-human-readable.md`)**](docs/demo-searching-bookmarks-human-readable.md) *(and [detailed trace](docs/demo-searching-bookmarks.md))*
+  - **UI Screenshots (`docs/`)**:
+    - [`docs/screenshot-showcase-dashboard.png`](docs/screenshot-showcase-dashboard.png) — Main Dark Showcase Dashboard & Recently Added Grid
+    - [`docs/screenshot-add-bookmark-modal.png`](docs/screenshot-add-bookmark-modal.png) — Add Bookmark with Deep AI Inspection Modal
+    - [`docs/screenshot-ai-copilot-drawer.png`](docs/screenshot-ai-copilot-drawer.png) — Bookmarks AI Copilot Conversational Search Drawer

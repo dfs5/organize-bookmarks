@@ -67,3 +67,16 @@ python3 .agents/memory/memory_cli.py index --force
 python3 .agents/memory/memory_cli.py compact --summary "Summary of completed work"
 ```
 
+### Automated GitHub Repository Update (`publish_update.sh`)
+```bash
+# Preview what will be synced, sanitized, and staged (no commit or push)
+./publish_update.sh --dry-run
+
+# Run all 5 steps (sync .example config, sanitize docs, stage, audit gate, commit & push)
+./publish_update.sh "feat(taxonomy): description of change"
+
+# Stage new untracked files as well, tag a release, and push
+./publish_update.sh "feat(server): add new endpoint" --all --tag v1.1.0
+```
+
+

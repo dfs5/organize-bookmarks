@@ -2805,6 +2805,372 @@ class BookmarkInspector:
             "bookmark": {k: v for k, v in target_bm.items() if k != "icon"}
         }
 
+    def import_bookmarks_batch(
+        self,
+        items: list,
+        dry_run: bool = False,
+        skip_existing: bool = True,
+        max_items: int = 25,
+        regenerate_html: bool = True,
+        default_notes: str = None,
+    ) -> dict:
+        """
+        Parse, deduplicate, preview (--dry-run), or live-inspect and ingest a batch of imported bookmarks.
+        Supports items parsed from Netscape HTML exports, Chrome/Edge Bookmarks JSON, catalog JSON, or URL lists.
+        Never injects unverified stubs: every new bookmark goes through canonical inspect_and_enrich().
+        """
+        from batch_enrich_all import clean_bookmark_url, clean_card_title
+        from update_and_reorganize_bookmarks import assign_hierarchy
+
+        with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+            catalog = json.load(f)
+
+        already_existing = []
+        new_candidates = []
+        seen_batch_keys = set()
+
+        for raw_item in items or []:
+            if isinstance(raw_item, str):
+                raw_item = {"url": raw_item.strip()}
+            elif not isinstance(raw_item, dict):
+                continue
+
+            raw_url = str(raw_item.get("url") or "").strip()
+            if not raw_url:
+                continue
+            cleaned_u = clean_bookmark_url(raw_url)
+            if not cleaned_u.startswith(("http://", "https://")):
+                cleaned_u = "https://" + cleaned_u
+
+            norm_key = normalize_url_for_comparison(cleaned_u)
+            if not norm_key or norm_key in seen_batch_keys:
+                continue
+            seen_batch_keys.add(norm_key)
+
+            raw_title = str(raw_item.get("title") or "").strip()
+            cleaned_title = clean_card_title(raw_title or cleaned_u, cleaned_u)
+            legacy_path = raw_item.get("legacy_path") if isinstance(raw_item.get("legacy_path"), list) else []
+            item_notes = str(
+                raw_item.get("notes")
+                if raw_item.get("notes") is not None
+                else (default_notes or "")
+            ).strip()
+
+            existing_idx, existing_bm = find_catalog_entry(catalog, [raw_url, cleaned_u])
+            if existing_idx is not None:
+                already_existing.append({
+                    "url": existing_bm.get("url", cleaned_u),
+                    "title": existing_bm.get("title", cleaned_title),
+                    "hierarchy": existing_bm.get("hierarchy", []),
+                    "notes": existing_bm.get("notes", ""),
+                })
+                if skip_existing:
+                    continue
+
+            pillar, subcat = assign_hierarchy({
+                "url": cleaned_u,
+                "title": cleaned_title,
+                "description": str(raw_item.get("description") or ""),
+                "notes": item_notes,
+                "legacy_path": legacy_path,
+            })
+
+            new_candidates.append({
+                "url": cleaned_u,
+                "title": cleaned_title,
+                "legacy_path": legacy_path,
+                "predicted_pillar": pillar,
+                "predicted_subcategory": subcat,
+                "notes": item_notes,
+                "add_date": str(raw_item.get("add_date") or "").strip(),
+                "icon": str(raw_item.get("icon") or "").strip(),
+                "visit_count": int(raw_item.get("visit_count", 1) or 1),
+                "browser_data": raw_item.get("browser_data") if isinstance(raw_item.get("browser_data"), dict) else None,
+            })
+
+        if dry_run:
+            return {
+                "success": True,
+                "dry_run": True,
+                "total_parsed": len(seen_batch_keys),
+                "already_existing_count": len(already_existing),
+                "new_candidates_count": len(new_candidates),
+                "max_items_limit": max_items,
+                "candidates": [
+                    {k: v for k, v in c.items() if k not in ("icon", "browser_data")}
+                    for c in new_candidates[: max(max_items, 50)]
+                ],
+                "existing_preview": already_existing[:20],
+            }
+
+        batch_to_process = new_candidates[: max(1, int(max_items or 25))]
+        backup_file = save_catalog_backup(catalog, self._workspace_dir, "bulk_import") if batch_to_process else None
+
+        ingested_bookmarks = []
+        updated_bookmarks = []
+        skipped_items = []
+
+        for cand in batch_to_process:
+            u = cand["url"]
+            b_data = cand.get("browser_data")
+            # Seed fallback title/meta from imported file if verified metadata or browser_data is present
+            res = self.ingest_and_persist(
+                u,
+                browser_data=b_data,
+                regenerate_html=False,
+                notes=cand.get("notes") or None,
+            )
+            if res.get("success") and res.get("bookmark"):
+                bm_out = res["bookmark"]
+                # Preserve imported legacy_path / add_date / icon if catalog entry didn't already have them
+                if cand.get("legacy_path") or cand.get("icon") or cand.get("add_date"):
+                    try:
+                        with open(CATALOG_PATH, "r", encoding="utf-8") as cf:
+                            cur_cat = json.load(cf)
+                        idx, cur_bm = find_catalog_entry(cur_cat, [u, bm_out.get("url", u)])
+                        if idx is not None and cur_bm:
+                            changed = False
+                            if cand.get("legacy_path") and not cur_bm.get("legacy_path"):
+                                cur_bm["legacy_path"] = cand["legacy_path"]
+                                bm_out["legacy_path"] = cand["legacy_path"]
+                                changed = True
+                            if cand.get("icon") and not cur_bm.get("icon"):
+                                cur_bm["icon"] = cand["icon"]
+                                changed = True
+                            if cand.get("add_date") and not cur_bm.get("add_date"):
+                                cur_bm["add_date"] = cand["add_date"]
+                                bm_out["add_date"] = cand["add_date"]
+                                changed = True
+                            if changed:
+                                cur_cat[idx] = cur_bm
+                                with open(CATALOG_PATH, "w", encoding="utf-8") as cf:
+                                    json.dump(cur_cat, cf, indent=2, ensure_ascii=False)
+                    except Exception:
+                        pass
+
+                if res.get("is_existing"):
+                    updated_bookmarks.append(bm_out)
+                else:
+                    ingested_bookmarks.append(bm_out)
+            else:
+                reason = (
+                    res.get("auth_message")
+                    or res.get("dead_reason")
+                    or res.get("browser_message")
+                    or res.get("error")
+                    or "Requires live /browser inspection"
+                )
+                skipped_items.append({
+                    "url": u,
+                    "title": cand.get("title", u),
+                    "reason": reason,
+                    "is_auth_barrier": bool(res.get("is_auth_barrier")),
+                    "is_dead_page": bool(res.get("is_dead_page")),
+                    "requires_browser_inspection": bool(res.get("requires_browser_inspection")),
+                })
+
+        if (ingested_bookmarks or updated_bookmarks) and regenerate_html:
+            for script_name in ("update_and_reorganize_bookmarks.py", "generate_dark_showcase.py"):
+                script_path = os.path.join(self._workspace_dir, script_name)
+                if os.path.exists(script_path):
+                    subprocess.run([sys.executable, script_path], cwd=self._workspace_dir, check=False)
+
+        return {
+            "success": True,
+            "dry_run": False,
+            "total_parsed": len(seen_batch_keys),
+            "already_existing_count": len(already_existing),
+            "new_candidates_count": len(new_candidates),
+            "processed_count": len(batch_to_process),
+            "remaining_unprocessed_count": max(0, len(new_candidates) - len(batch_to_process)),
+            "ingested_count": len(ingested_bookmarks),
+            "updated_count": len(updated_bookmarks),
+            "skipped_count": len(skipped_items),
+            "backup_path": backup_file,
+            "ingested_bookmarks": ingested_bookmarks,
+            "updated_bookmarks": updated_bookmarks,
+            "skipped_items": skipped_items,
+        }
+
+
+IMPORT_IGNORE_PATTERNS = (
+    "javascript:",
+    "chrome://",
+    "edge://",
+    "about:",
+    "file://",
+    "data:",
+    "mailto:",
+    "localhost",
+    "127.0.0.1",
+    "login.microsoftonline.com",
+    "accounts.google.com",
+    "safelinks.protection.outlook.com",
+)
+
+
+def _is_importable_bookmark_url(url_str: str) -> bool:
+    u = (url_str or "").strip().lower()
+    if not u or len(u) < 8:
+        return False
+    if any(pat in u for pat in IMPORT_IGNORE_PATTERNS):
+        return False
+    return u.startswith(("http://", "https://", "www.")) or ("." in u.split("/")[0])
+
+
+def parse_bookmarks_import_payload(content_str: str, filename: str = "") -> list:
+    """
+    Parse bookmarks from any of the 4 standard import formats:
+      1. Netscape Bookmark HTML export (`<!DOCTYPE NETSCAPE-Bookmark-file-1` or `<DT><A HREF=...`)
+      2. Chrome / Edge `Bookmarks` JSON file (`{"roots": {"bookmark_bar": ...}}`)
+      3. Catalog JSON array or object (`[{"url": ...}]` or `{"bookmarks": [...]}`)
+      4. Plain-text / Markdown URL list (one URL per line or `[Title](https://...)`)
+    """
+    import html
+
+    text = (content_str or "").strip()
+    if not text:
+        return []
+
+    parsed_items = []
+
+    # 1. Try JSON formats first if it starts with '{' or '['
+    if text[0] in ("{", "["):
+        try:
+            data = json.loads(text)
+            if isinstance(data, dict) and isinstance(data.get("roots"), dict):
+                # Chrome / Edge Bookmarks JSON profile format
+                def _walk_chrome_node(node, folder_stack):
+                    if not isinstance(node, dict):
+                        return
+                    ntype = node.get("type", "")
+                    name = str(node.get("name") or "").strip()
+                    if ntype == "url" and node.get("url"):
+                        u = str(node["url"]).strip()
+                        if _is_importable_bookmark_url(u):
+                            parsed_items.append({
+                                "url": u,
+                                "title": name or u,
+                                "legacy_path": [f for f in folder_stack if f and f.lower() not in ("bookmarks bar", "favorites bar", "other bookmarks", "other favorites", "mobile bookmarks")],
+                                "add_date": str(node.get("date_added") or ""),
+                            })
+                    elif isinstance(node.get("children"), list):
+                        next_stack = folder_stack + ([name] if name else [])
+                        for child in node["children"]:
+                            _walk_chrome_node(child, next_stack)
+
+                for root_node in data["roots"].values():
+                    if isinstance(root_node, dict):
+                        _walk_chrome_node(root_node, [])
+                return parsed_items
+
+            # Catalog JSON list or wrapper object
+            raw_list = data if isinstance(data, list) else (
+                data.get("bookmarks") or data.get("items") or data.get("urls") or [data]
+            )
+            if isinstance(raw_list, list):
+                for entry in raw_list:
+                    if isinstance(entry, str) and _is_importable_bookmark_url(entry):
+                        parsed_items.append({"url": entry.strip()})
+                    elif isinstance(entry, dict) and entry.get("url") and _is_importable_bookmark_url(str(entry["url"])):
+                        parsed_items.append({
+                            "url": str(entry["url"]).strip(),
+                            "title": str(entry.get("title") or entry.get("name") or "").strip(),
+                            "description": str(entry.get("description") or "").strip(),
+                            "notes": str(entry.get("notes") or entry.get("custom_notes") or "").strip(),
+                            "legacy_path": entry.get("legacy_path") if isinstance(entry.get("legacy_path"), list) else [],
+                            "add_date": str(entry.get("add_date") or "").strip(),
+                            "icon": str(entry.get("icon") or "").strip(),
+                            "visit_count": int(entry.get("visit_count", 1) or 1),
+                            "browser_data": entry.get("browser_data") if isinstance(entry.get("browser_data"), dict) else None,
+                        })
+                return parsed_items
+        except Exception:
+            pass
+
+    # 2. Check for Netscape Bookmark HTML format (<DL>, <DT><A HREF="...">)
+    if re.search(r"<A\s+[^>]*HREF=", text, re.IGNORECASE):
+        current_path = []
+        last_item = None
+        for line in text.splitlines():
+            stripped = line.strip()
+            if "<H3" in stripped.upper():
+                m_h3 = re.search(r"<H3[^>]*>(.*?)</H3>", stripped, re.IGNORECASE)
+                if m_h3:
+                    folder_name = html.unescape(m_h3.group(1)).strip()
+                    current_path.append(folder_name)
+                last_item = None
+            elif "</DL>" in stripped.upper():
+                if current_path:
+                    current_path.pop()
+                last_item = None
+            elif "<A " in stripped.upper():
+                m_u = re.search(r'HREF="([^"]+)"|HREF=\'([^\']+)\'', stripped, re.IGNORECASE)
+                m_t = re.search(r">([^<]*)</A>", stripped, re.IGNORECASE)
+                m_d = re.search(r'ADD_DATE=["\']?(\d+)', stripped, re.IGNORECASE)
+                m_i = re.search(r'ICON="([^"]+)"|ICON=\'([^\']+)\'', stripped, re.IGNORECASE)
+                if m_u:
+                    raw_href = (m_u.group(1) or m_u.group(2) or "").strip()
+                    u = (
+                        raw_href.replace("&amp;", "&")
+                        .replace("&quot;", '"')
+                        .replace("&#39;", "'")
+                        .replace("&lt;", "<")
+                        .replace("&gt;", ">")
+                    )
+                    if _is_importable_bookmark_url(u):
+                        t = html.unescape(m_t.group(1)).strip() if m_t else u
+                        t = re.sub(r"^\[\d+\s+visits?\]\s*", "", t, flags=re.IGNORECASE).strip()
+                        clean_folders = [
+                            f for f in current_path
+                            if f.lower() not in ("bookmarks bar", "favorites bar", "bookmarks", "favorites", "other bookmarks")
+                        ]
+                        icon_str = (m_i.group(1) or m_i.group(2) or "").strip() if m_i else ""
+                        item = {
+                            "url": u,
+                            "title": t,
+                            "legacy_path": list(clean_folders),
+                            "add_date": m_d.group(1) if m_d else str(int(time.time())),
+                            "icon": icon_str,
+                            "notes": "",
+                        }
+                        parsed_items.append(item)
+                        last_item = item
+            elif stripped.upper().startswith("<DD>") and last_item is not None:
+                dd_text = re.sub(r"</?DD[^>]*>", "", stripped, flags=re.IGNORECASE).strip()
+                dd_text = html.unescape(dd_text)
+                if dd_text and not last_item.get("notes"):
+                    last_item["notes"] = dd_text[:300]
+        if parsed_items:
+            return parsed_items
+
+    # 3. Fallback: Plain-text or Markdown URL list
+    for line in text.splitlines():
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        # Match Markdown link [Title](https://...)
+        m_md = re.search(r"\[([^\]]+)\]\((https?://[^\s\)]+)\)", s)
+        if m_md:
+            u = m_md.group(2).strip()
+            t = m_md.group(1).strip()
+            if _is_importable_bookmark_url(u):
+                parsed_items.append({"url": u, "title": t})
+            continue
+        # Match raw http(s) URL in line
+        m_url = re.search(r"(https?://[^\s<>\"\'`]+)", s)
+        if m_url:
+            u = m_url.group(1).rstrip(".,;)")
+            if _is_importable_bookmark_url(u):
+                parsed_items.append({"url": u})
+        elif _is_importable_bookmark_url(s.split()[0]):
+            u = s.split()[0]
+            if not u.startswith(("http://", "https://")):
+                u = "https://" + u
+            parsed_items.append({"url": u})
+
+    return parsed_items
+
 MAX_CATALOG_BACKUPS = 10
 
 def save_catalog_backup(catalog: list, workspace_dir: str, operation: str = "update", max_backups: int = MAX_CATALOG_BACKUPS) -> str:
@@ -3519,6 +3885,51 @@ class AIAgentHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send_json_resp(500, {"error": str(e)}, req_id=req_id, t0=t0)
 
+        elif parsed.path == "/api/bookmarks/import":
+            p_dict = payload if isinstance(payload, dict) else {}
+            raw_content = str(p_dict.get("content") or "").strip()
+            filename = str(p_dict.get("filename") or "").strip()
+            raw_urls = p_dict.get("urls") if isinstance(p_dict.get("urls"), list) else []
+            raw_items = p_dict.get("items") if isinstance(p_dict.get("items"), list) else []
+            dry_run = bool(p_dict.get("dry_run", False))
+            skip_existing = bool(p_dict.get("skip_existing", True))
+            max_items = int(p_dict.get("max_items", 20) or 20)
+            default_notes = str(p_dict.get("notes") or p_dict.get("custom_notes") or "").strip() or None
+
+            items_to_import = []
+            if raw_items:
+                items_to_import.extend(raw_items)
+            if raw_urls:
+                for u in raw_urls:
+                    if isinstance(u, str) and u.strip():
+                        items_to_import.append({"url": u.strip()})
+                    elif isinstance(u, dict) and u.get("url"):
+                        items_to_import.append(u)
+            if raw_content:
+                items_to_import.extend(parse_bookmarks_import_payload(raw_content, filename=filename))
+
+            if not items_to_import:
+                self._send_json_resp(400, {
+                    "success": False,
+                    "error": "No valid bookmark URLs or importable content found in payload."
+                }, req_id=req_id, t0=t0)
+                return
+
+            try:
+                result = self.inspector.import_bookmarks_batch(
+                    items_to_import,
+                    dry_run=dry_run,
+                    skip_existing=skip_existing,
+                    max_items=max_items,
+                    regenerate_html=not dry_run,
+                    default_notes=default_notes,
+                )
+                if not dry_run and (result.get("ingested_count", 0) > 0 or result.get("updated_count", 0) > 0):
+                    self.engine.reload()
+                self._send_json_resp(200, result, req_id=req_id, t0=t0)
+            except Exception as e:
+                self._send_json_resp(500, {"success": False, "error": str(e)}, req_id=req_id, t0=t0)
+
         else:
             self._send_json_resp(404, {"error": "Not Found", "path": parsed.path}, req_id=req_id, t0=t0)
 
@@ -3531,15 +3942,37 @@ class AIAgentServer(ThreadingHTTPServer):
     daemon_threads = True
 
 def main():
-    if any(flag in sys.argv for flag in ("--ingest-url", "--update-notes", "--help", "-h")):
+    if any(flag in sys.argv for flag in ("--ingest-url", "--import-file", "--update-notes", "--help", "-h")):
         import argparse
-        parser = argparse.ArgumentParser(description="F5 Bookmarks AI Agent Server & Bookmark Ingestion CLI")
-        parser.add_argument("--ingest-url", default=None, help="URL to inspect, enrich, and persist")
+        parser = argparse.ArgumentParser(description="F5 Bookmarks AI Agent Server & Bookmark Ingestion / Import CLI")
+        parser.add_argument("--ingest-url", default=None, help="Single URL to inspect, enrich, and persist")
+        parser.add_argument("--import-file", default=None, metavar="PATH", help="Import bookmarks from a Netscape HTML export, Chrome/Edge Bookmarks JSON, catalog JSON, or plain-text URL list")
+        parser.add_argument("--dry-run", action="store_true", help="Preview parsed bookmarks, duplicate counts, and predicted 9-pillar placement without modifying files")
+        parser.add_argument("--max-import", type=int, default=25, help="Maximum number of new bookmarks to inspect and ingest in a single batch (default: 25)")
+        parser.add_argument("--include-existing", action="store_true", help="Re-inspect and update bookmarks that already exist in bookmarks_catalog.json")
         parser.add_argument("--update-notes", default=None, metavar="URL", help="Update custom notes on an existing bookmark URL without re-fetching page content")
         parser.add_argument("--browser-json", default=None, help="JSON string or path to JSON file from /browser inspection")
-        parser.add_argument("--notes", "--custom-notes", dest="notes", default=None, help="Custom personal notes to attach to this bookmark link")
+        parser.add_argument("--notes", "--custom-notes", dest="notes", default=None, help="Custom personal notes to attach to the bookmark(s)")
         parser.add_argument("--no-html", action="store_true", help="Skip regenerating HTML files")
         args, _ = parser.parse_known_args()
+        if args.import_file:
+            import_path = os.path.expanduser(args.import_file)
+            if not os.path.exists(import_path):
+                print(json.dumps({"success": False, "error": f"Import file not found: {import_path}"}, indent=2))
+                sys.exit(1)
+            with open(import_path, "r", encoding="utf-8", errors="ignore") as f:
+                raw_content = f.read()
+            parsed_items = parse_bookmarks_import_payload(raw_content, filename=os.path.basename(import_path))
+            res = AIAgentHandler.inspector.import_bookmarks_batch(
+                parsed_items,
+                dry_run=args.dry_run,
+                skip_existing=not args.include_existing,
+                max_items=args.max_import,
+                regenerate_html=not (args.no_html or args.dry_run),
+                default_notes=args.notes,
+            )
+            print(json.dumps(res, indent=2, ensure_ascii=False))
+            return
         if args.update_notes:
             workspace_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             with open(CATALOG_PATH, "r", encoding="utf-8") as f:

@@ -41,9 +41,14 @@
   2. **Target Page Inspection**: Next, open the actual target bookmark URL in the `/browser` subagent to extract the real rendered `<title>`, headings, and core page content (handling JS SPAs, Cloudflare/Imperva WAFs, and existing browser SSO sessions), and synthesize the `description` and `content_summary` so they explicitly connect the page's topic to the company's main business (e.g., for `amadeus.com/en/innovation/artificial-intelligence`, explicitly ground the AI initiatives in Amadeus's global travel & hospitality technology ecosystem).
   3. **Login / Authentication Wall Guardrail**: If `/browser` hits an SSO login screen (`Sign In`, Okta, Highspot, SharePoint/Microsoft login, APM policy logon, etc.) that cannot be bypassed automatically, **stop and ask the user to log in via the browser first** — NEVER save a bookmark with the title, description, summary, or tags of a login page.
   4. **Core Content Only**: Summarize only the core content of the target page framed within the company's core business context (never follow unrelated external links or include "Related Content" / sidebar noise; for link-collection KBs like "Recommended Actions", summarize the core link titles without following them).
-  5. **One-Command Canonical Ingestion (`--ingest-url`)**: Never write ad-hoc inline Python scripts to save bookmarks to `bookmarks_catalog.json` or `bookmarks_verified_metadata.json`. Instead, pass the `/browser` subagent payload (including `"company_context"`) directly to the canonical CLI helper (which validates schema, updates all 3 JSON stores, and regenerates both HTML files in one step):
+  5. **One-Command Canonical Ingestion (`--ingest-url` & `--import-file`)**: Never write ad-hoc inline Python scripts to save bookmarks to `bookmarks_catalog.json` or `bookmarks_verified_metadata.json`. Instead, pass the `/browser` subagent payload (including `"company_context"`) directly to the canonical CLI helper (which validates schema, updates all 3 JSON stores, and regenerates both HTML files in one step):
      ```bash
      python3 ai_agent_server/ai_agent_server.py --ingest-url "<url>" --browser-json '<json>' --notes "<optional custom notes>"
+     ```
+     For bulk bookmark files (Netscape `.html` exports, Chrome/Edge `Bookmarks` JSON, `.json` catalog lists, or `.txt`/`.md` URL lists), use `--import-file` (always preview with `--dry-run` first) or `POST /api/bookmarks/import`:
+     ```bash
+     python3 ai_agent_server/ai_agent_server.py --import-file "<path>" --dry-run
+     python3 ai_agent_server/ai_agent_server.py --import-file "<path>" --max-import 20 --notes "<optional batch notes>"
      ```
   6. **Pillar-to-Tag Alignment**: Verify in `/browser` that the newly added card in `bookmarks_showcase.html` has a clean title, complete grammatical description (110–180 chars, no mid-clause truncation), 150–250 word hidden summary reflecting the company's main business, and product/topic/source tags that strictly align with its assigned Strategic Pillar and Subcategory.
 
@@ -77,7 +82,7 @@ A JSON `list` of bookmark objects. Each item has:
 
 ## 3. Code Map (Use Exact Line Ranges with `view_file`)
 
-### [`ai_agent_server/ai_agent_server.py`](ai_agent_server/ai_agent_server.py) (3,222 lines)
+### [`ai_agent_server/ai_agent_server.py`](ai_agent_server/ai_agent_server.py) (3,971 lines)
 - `L35–L209`: Config loader (`load_config`), path resolution, Vertex AI model/endpoint helpers (`resolve_vertex_model`, `get_vertex_endpoint`).
 - `L215–L416`: `CommunicationLogger` — traffic logging & token redaction (`ai_communication.log`).
 - `L429–L552`: `send_llm_request` & `GoogleAuthHelper` (ADC token + Project ID resolution).
@@ -86,18 +91,18 @@ A JSON `list` of bookmark objects. Each item has:
 - `L1124–L1431`: `CatalogEngine` — BM25 index (`_build_index`), `_heuristic_extract_intent`, hybrid `search`.
 - `L1434–L1695`: `LLMBridge` — AI chat synthesis (`generate_synthesis`, Vertex/Gemini/Ollama/Heuristic cascade).
 - `L1711–L1826`: `WebPageContentExtractor` — HTML parser fallback.
-- `L1828–L2626`: `BookmarkInspector` — `_discover_browser_cdp_port` (`L1907–L1984`), `_cdp_ws_eval` (`L1986–L2090`), `_inspect_via_live_browser` (`L2092–L2220`), `fetch_page` (`L2222–L2410`), `detect_official_f5` (`L2412–L2434`), `inspect_and_enrich` (`L2440–L2566`), `ingest_and_persist` (`L2568–L2626`).
-- `L2658–L3222`: `AIAgentHandler` (`do_GET` `L2705–L2769`, `do_POST` `L2771–L3172` for `/api/search`, `/api/chat`, `/api/bookmarks/*`) & `main` (`--ingest-url` CLI + server entrypoint `L3181–L3222`).
+- `L1828–L2992`: `BookmarkInspector` — `_discover_browser_cdp_port` (`L1907–L1984`), `_cdp_ws_eval` (`L1986–L2090`), `_inspect_via_live_browser` (`L2092–L2220`), `fetch_page` (`L2222–L2410`), `detect_official_f5` (`L2412–L2434`), `inspect_and_enrich` (`L2440–L2566`), `ingest_and_persist` (`L2568–L2806`), `import_bookmarks_batch` (`L2808–L2992`).
+- `L3021–L3160`: `parse_bookmarks_import_payload` (multi-format parser for Netscape HTML, Chrome/Edge JSON, catalog JSON, and URL lists).
+- `L3175–L3971`: `AIAgentHandler` (`do_GET`, `do_POST` for `/api/search`, `/api/chat`, `/api/bookmarks/add`, `/api/bookmarks/import`, `/api/bookmarks/delete`) & `main` (`--ingest-url`, `--import-file` CLI + server entrypoint `L3925–L3971`).
 
-### [`generate_dark_showcase.py`](generate_dark_showcase.py) (3,746 lines)
+### [`generate_dark_showcase.py`](generate_dark_showcase.py) (3,995 lines)
 - `L1–L33`: Catalog load, `get_pillar_and_sub`, `esc`, HTML header start.
 - `L34–L533`: Core CSS styles (dark theme, layout, cards, badges).
-- `L534–L856`: `render_card(b, is_recent=False)` & Python template generation for pillars/modals.
-- `L857–L2234`: AI Copilot drawer CSS, Add/Delete modal markup, and static HTML structure.
-- `L2235–L2455`: Client JS — `refreshCardsList`, `applyFilters`, `toggleManageMode`, `openDeleteModal`.
-- `L2551–L2800`: Client JS — Add Bookmark modal (`openAddModal`, `injectNewCardIntoDOM`).
-- `L3069–L3440`: Client JS — AI Copilot drawer, `selectProductScope`, `probeServer`, `appendMessage`, `locateCardOnPage`.
-- `L3444–L3746`: Client JS — `clientFallbackSearch`, `submitAiQuery`, and final write to `bookmarks_showcase.html`.
+- `L534–L905`: `render_card(b, is_recent=False)` & Python template generation for pillars and Single/Bulk Add Bookmark modals.
+- `L906–L2318`: AI Copilot drawer CSS, Bulk Import modal CSS (`L1021–L1086`), Add/Delete modal markup, and static HTML structure.
+- `L2319–L2540`: Client JS — `refreshCardsList`, `applyFilters`, `toggleManageMode`, `openDeleteModal`.
+- `L2630–L3060`: Client JS — Add Bookmark modal (`openAddModal`, `switchAddModalTab`, `submitNewBookmark`, `runBulkImport`, `injectNewCardIntoDOM`).
+- `L3250–L3995`: Client JS — AI Copilot drawer, `selectProductScope`, `probeServer`, `appendMessage`, `locateCardOnPage`, `clientFallbackSearch`, `submitAiQuery`, and final write to `bookmarks_showcase.html`.
 
 ### Other Core Scripts
 - [`update_and_reorganize_bookmarks.py`](update_and_reorganize_bookmarks.py) (`730 lines`): `clean_title` (`L39–L181`), `assign_hierarchy` (`L191–L400`), `is_valid_redirect` (`L410–L430`), `main` (`L446–L727`).

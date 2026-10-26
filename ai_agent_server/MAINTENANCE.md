@@ -227,6 +227,22 @@ python3 sync_edge_history_bookmarks.py
 python3 sync_edge_history_bookmarks.py --dry-run --show-candidates
 ```
 
+### Single-URL & Bulk Bookmark Ingestion (CLI & REST API)
+You can add individual bookmarks or bulk-import bookmark files (`.html` Netscape exports, Chrome/Edge `Bookmarks` JSON, `.json` catalog arrays, or `.txt`/`.md` URL lists) via the `+ Add Bookmark` modal in `bookmarks_showcase.html`, the CLI, or the REST API:
+
+```bash
+# CLI: Dry-run preview of a bulk bookmark file (lists new vs. already-curated URLs)
+python3 ai_agent_server/ai_agent_server.py --import-file ~/Downloads/bookmarks.html --dry-run
+
+# CLI: Import up to 25 new bookmarks with full inspection, taxonomy classification, and HTML rebuild
+python3 ai_agent_server/ai_agent_server.py --import-file ~/Downloads/bookmarks.html --max-import 25 --notes "Q4 import"
+
+# REST API: Dry-run bulk import preview via POST /api/bookmarks/import
+curl -s -X POST http://localhost:8765/api/bookmarks/import \
+  -H "Content-Type: application/json" \
+  -d '{"content": "<DT><A HREF=\"https://docs.nginx.com/\">NGINX Docs</A>", "filename": "export.html", "dry_run": true}' | jq .
+```
+
 ---
 
 ## 7. Troubleshooting & FAQ

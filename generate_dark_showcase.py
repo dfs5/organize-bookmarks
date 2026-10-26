@@ -833,30 +833,79 @@ html += r"""
     <div class="modal-header">
       <div class="modal-title-wrap">
         <span class="modal-icon-add">✨</span>
-        <h3 class="modal-title">Add Bookmark with Deep AI Inspection</h3>
+        <h3 class="modal-title">Add or Import Bookmarks with Deep AI Inspection</h3>
       </div>
       <button class="modal-close" id="btnCancelAddModal">&times;</button>
     </div>
     <div class="modal-body">
-      <p class="modal-subtitle">Paste any web link or document URL. The AI agent will browse the website, verify official F5 logos, SVGs and copyright footnotes (even on CDNs), generate a concise UI summary and an extended technical summary, automatically group the link, and attach hidden semantic metadata for LLM search.</p>
-      
-      <div class="add-input-group">
-        <input type="url" id="inputBookmarkUrl" class="add-url-input" placeholder="https://clouddocs.f5.com/... or any URL" autocomplete="off" spellcheck="false" aria-label="Bookmark URL" />
-        <button id="btnSubmitAddBookmark" class="btn-inspect-add" type="button">
-          <span id="btnAddSpinner" style="display:none;">⏳</span>
-          <span id="btnAddText">Inspect &amp; Ingest</span>
-        </button>
+      <div class="add-mode-tabs" role="tablist" aria-label="Bookmark Ingestion Mode">
+        <button type="button" id="tabSingleMode" class="add-mode-tab active" role="tab" aria-selected="true" aria-controls="panelSingleMode">🔗 Single URL</button>
+        <button type="button" id="tabBulkMode" class="add-mode-tab" role="tab" aria-selected="false" aria-controls="panelBulkMode">📂 Bulk Import (HTML / JSON / URLs)</button>
       </div>
 
-      <div class="add-notes-group">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-          <label for="inputBookmarkNotes" class="add-notes-label">
-            <span>📝 Custom Notes</span>
-            <span class="add-notes-hint">(Personal notes, customer context, or reminders for this link)</span>
-          </label>
-          <button id="btnSaveNoteOnly" type="button" style="display:none; padding:4px 10px; font-size:0.75rem; font-weight:600; border-radius:6px; border:1px solid rgba(245, 158, 11, 0.45); background:rgba(245, 158, 11, 0.16); color:#fbbf24; cursor:pointer; white-space:nowrap;">💾 Save Note</button>
+      <!-- Mode 1: Single URL Ingestion -->
+      <div id="panelSingleMode" role="tabpanel" aria-labelledby="tabSingleMode">
+        <p class="modal-subtitle">Paste any web link or document URL. The AI agent will browse the website, verify official F5 logos, SVGs and copyright footnotes (even on CDNs), generate a concise UI summary and an extended technical summary, automatically group the link, and attach hidden semantic metadata for LLM search.</p>
+        
+        <label for="inputBookmarkUrl" class="add-notes-label" style="margin-bottom:6px; display:block;">🌐 Bookmark URL</label>
+        <div class="add-input-group">
+          <input type="url" id="inputBookmarkUrl" name="bookmark_url" class="add-url-input" placeholder="https://clouddocs.f5.com/... or any URL" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <button id="btnSubmitAddBookmark" class="btn-inspect-add" type="button">
+            <span id="btnAddSpinner" style="display:none;">⏳</span>
+            <span id="btnAddText">Inspect &amp; Ingest</span>
+          </button>
         </div>
-        <textarea id="inputBookmarkNotes" class="add-notes-input" rows="2" placeholder="Add custom notes for this link (e.g. 'Use for ACME Corp sizing review' or 'Official city portal')..."></textarea>
+
+        <div class="add-notes-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <label for="inputBookmarkNotes" class="add-notes-label">
+              <span>📝 Custom Notes</span>
+              <span class="add-notes-hint">(Personal notes, customer context, or reminders for this link)</span>
+            </label>
+            <button id="btnSaveNoteOnly" type="button" style="display:none; padding:4px 10px; font-size:0.75rem; font-weight:600; border-radius:6px; border:1px solid rgba(245, 158, 11, 0.45); background:rgba(245, 158, 11, 0.16); color:#fbbf24; cursor:pointer; white-space:nowrap;">💾 Save Note</button>
+          </div>
+          <textarea id="inputBookmarkNotes" name="bookmark_notes" class="add-notes-input" rows="2" placeholder="Add custom notes for this link (e.g. 'Use for ACME Corp sizing review' or 'Official city portal')..."></textarea>
+        </div>
+      </div>
+
+      <!-- Mode 2: Bulk File / URL List Import -->
+      <div id="panelBulkMode" role="tabpanel" aria-labelledby="tabBulkMode" style="display:none;">
+        <p class="modal-subtitle">Import bookmarks from a Netscape HTML export (Chrome/Edge/Firefox/Safari), a Chrome/Edge <code>Bookmarks</code> JSON file, a catalog JSON file, or paste multiple URLs. Existing bookmarks are automatically deduplicated and skipped.</p>
+
+        <div class="bulk-file-row">
+          <label for="bulkImportFile" class="add-notes-label">📁 Choose Export File (<code>.html</code>, <code>.json</code>, <code>.txt</code>, <code>.md</code>)</label>
+          <input type="file" id="bulkImportFile" name="bulk_import_file" accept=".html,.htm,.json,.txt,.md" class="bulk-file-input" />
+        </div>
+
+        <div class="add-notes-group" style="margin-bottom:12px;">
+          <label for="bulkImportText" class="add-notes-label">
+            <span>📋 Or Paste URLs / Bookmark Export Content</span>
+            <span class="add-notes-hint">(One URL per line, Markdown links, or raw HTML/JSON)</span>
+          </label>
+          <textarea id="bulkImportText" name="bulk_import_text" class="add-notes-input" rows="4" placeholder="https://docs.nginx.com/&#10;https://my.f5.com/manage/s/article/K5903" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+        </div>
+
+        <div class="bulk-controls-row">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label for="bulkMaxItems" class="add-notes-label" style="white-space:nowrap;">Batch Limit:</label>
+            <input type="number" id="bulkMaxItems" name="bulk_max_items" value="15" min="1" max="100" class="bulk-num-input" />
+          </div>
+          <div style="display:flex; gap:8px; margin-left:auto;">
+            <button type="button" id="btnBulkPreview" class="btn-subtle">🔍 Preview Candidates</button>
+            <button type="button" id="btnBulkExecute" class="btn-inspect-add">
+              <span id="btnBulkSpinner" style="display:none;">⏳</span>
+              <span id="btnBulkText">Inspect &amp; Import New</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="bulkResultBox" class="add-result-box" style="display:none; margin-top:14px;">
+          <div class="result-header">
+            <span id="bulkStatusBadge" class="result-badge-info">📊 Import Summary</span>
+            <span id="bulkCountsBadge" class="result-pillar-badge"></span>
+          </div>
+          <div id="bulkCandidateList" class="delete-list-wrapper" style="max-height:200px; margin:8px 0;"></div>
+        </div>
       </div>
 
       <!-- Live Inspection Progress Steps -->
@@ -971,7 +1020,71 @@ html += r"""
 
   /* Add Bookmark Dialog */
   .add-bm-dialog {
-    max-width: 620px !important;
+    max-width: 650px !important;
+  }
+  .add-mode-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    background: rgba(2, 6, 23, 0.55);
+    padding: 5px;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+  }
+  .add-mode-tab {
+    flex: 1;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: 8px 12px;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .add-mode-tab:hover {
+    color: #f8fafc;
+    background: rgba(30, 41, 59, 0.5);
+  }
+  .add-mode-tab.active {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.3), rgba(124, 58, 237, 0.35));
+    border-color: rgba(96, 165, 250, 0.45);
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.2);
+  }
+  .bulk-file-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .bulk-file-input {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px dashed rgba(148, 163, 184, 0.35);
+    border-radius: 10px;
+    padding: 9px 12px;
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .bulk-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .bulk-num-input {
+    width: 68px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #f8fafc;
+    font-size: 0.85rem;
+    outline: none;
   }
   .modal-icon-add {
     font-size: 1.5rem;
@@ -2788,6 +2901,163 @@ html += r"""
   if (addBookmarkBtn) addBookmarkBtn.addEventListener('click', () => openAddModal());
   if (btnCancelAddModal) btnCancelAddModal.addEventListener('click', closeAddModal);
   if (btnModalCloseAdd) btnModalCloseAdd.addEventListener('click', closeAddModal);
+
+  // Mode Tabs (Single URL vs Bulk Import)
+  const tabSingleMode = document.getElementById('tabSingleMode');
+  const tabBulkMode = document.getElementById('tabBulkMode');
+  const panelSingleMode = document.getElementById('panelSingleMode');
+  const panelBulkMode = document.getElementById('panelBulkMode');
+  const bulkImportFile = document.getElementById('bulkImportFile');
+  const bulkImportText = document.getElementById('bulkImportText');
+  const bulkMaxItems = document.getElementById('bulkMaxItems');
+  const btnBulkPreview = document.getElementById('btnBulkPreview');
+  const btnBulkExecute = document.getElementById('btnBulkExecute');
+  const btnBulkSpinner = document.getElementById('btnBulkSpinner');
+  const btnBulkText = document.getElementById('btnBulkText');
+  const bulkResultBox = document.getElementById('bulkResultBox');
+  const bulkStatusBadge = document.getElementById('bulkStatusBadge');
+  const bulkCountsBadge = document.getElementById('bulkCountsBadge');
+  const bulkCandidateList = document.getElementById('bulkCandidateList');
+
+  function switchAddModalMode(mode) {
+    const isBulk = mode === 'bulk';
+    if (tabSingleMode && tabBulkMode) {
+      tabSingleMode.classList.toggle('active', !isBulk);
+      tabSingleMode.setAttribute('aria-selected', String(!isBulk));
+      tabBulkMode.classList.toggle('active', isBulk);
+      tabBulkMode.setAttribute('aria-selected', String(isBulk));
+    }
+    if (panelSingleMode) panelSingleMode.style.display = isBulk ? 'none' : 'block';
+    if (panelBulkMode) panelBulkMode.style.display = isBulk ? 'block' : 'none';
+    if (isBulk) {
+      if (addProgressBox) addProgressBox.style.display = 'none';
+      if (addResultBox) addResultBox.style.display = 'none';
+      if (btnLocateNewCard) btnLocateNewCard.style.display = 'none';
+    }
+  }
+
+  if (tabSingleMode) tabSingleMode.addEventListener('click', () => switchAddModalMode('single'));
+  if (tabBulkMode) tabBulkMode.addEventListener('click', () => switchAddModalMode('bulk'));
+
+  if (bulkImportFile) {
+    bulkImportFile.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (bulkImportText) {
+          bulkImportText.value = String(reader.result || '');
+        }
+        showToast(`📁 Loaded "${file.name}" (${Math.round(file.size / 1024)} KB). Click "Preview Candidates" to inspect.`, 'info', 4000);
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  async function runBulkImport(isDryRun) {
+    const rawContent = bulkImportText ? bulkImportText.value.trim() : '';
+    const fileObj = bulkImportFile && bulkImportFile.files && bulkImportFile.files[0];
+    const filename = fileObj ? fileObj.name : '';
+    const maxItems = bulkMaxItems ? parseInt(bulkMaxItems.value || '15', 10) : 15;
+
+    if (!rawContent) {
+      showToast('⚠️ Please select a bookmark export file (.html/.json/.txt) or paste URLs first.', 'error');
+      return;
+    }
+
+    if (btnBulkPreview) btnBulkPreview.disabled = true;
+    if (btnBulkExecute) btnBulkExecute.disabled = true;
+    if (!isDryRun && btnBulkSpinner) btnBulkSpinner.style.display = 'inline-block';
+    if (!isDryRun && btnBulkText) btnBulkText.textContent = 'Inspecting & Importing...';
+
+    try {
+      const res = await fetch(`http://localhost:8765/api/bookmarks/import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: rawContent,
+          filename: filename,
+          dry_run: Boolean(isDryRun),
+          max_items: maxItems
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `Server responded with HTTP ${res.status}`);
+      }
+
+      if (bulkResultBox) bulkResultBox.style.display = 'block';
+      if (isDryRun) {
+        if (bulkStatusBadge) {
+          bulkStatusBadge.textContent = `🔍 Preview: ${data.new_candidates_count} New Candidate(s)`;
+          bulkStatusBadge.className = 'result-badge-info';
+        }
+        if (bulkCountsBadge) {
+          bulkCountsBadge.textContent = `Parsed: ${data.total_parsed} • Already in Catalog: ${data.already_existing_count}`;
+        }
+        const cands = data.candidates || [];
+        if (bulkCandidateList) {
+          if (cands.length === 0) {
+            bulkCandidateList.innerHTML = `<div class="delete-list-item"><div class="delete-list-title">✅ All ${data.already_existing_count} parsed bookmark(s) already exist in your catalog!</div></div>`;
+          } else {
+            bulkCandidateList.innerHTML = cands.map(c => `
+              <div class="delete-list-item">
+                <div class="delete-list-title">${escapeHtmlClient(c.title || c.url)} <span style="color:#93c5fd; font-size:0.73rem; font-weight:500;">→ ${escapeHtmlClient(c.predicted_pillar || '')}</span></div>
+                <div class="delete-list-url">${escapeHtmlClient(c.url)}</div>
+              </div>
+            `).join('');
+          }
+        }
+        showToast(`🔍 Parsed ${data.total_parsed} bookmark(s): ${data.new_candidates_count} new, ${data.already_existing_count} already in catalog.`, 'info', 5000);
+      } else {
+        if (bulkStatusBadge) {
+          bulkStatusBadge.textContent = `✅ Imported ${data.ingested_count} New Bookmark(s)`;
+          bulkStatusBadge.className = 'result-badge-success';
+        }
+        if (bulkCountsBadge) {
+          bulkCountsBadge.textContent = `Skipped/Pending: ${data.skipped_count} • Existing: ${data.already_existing_count}`;
+        }
+        const addedList = data.ingested_bookmarks || [];
+        const skippedList = data.skipped_items || [];
+        addedList.forEach(bm => {
+          const pil = (bm.hierarchy && bm.hierarchy[0]) || '09. External Engineering, Protocols & Tools';
+          const sub = (bm.hierarchy && bm.hierarchy[1]) || 'General Reference';
+          injectNewCardIntoDOM(bm, pil, sub);
+        });
+        if (bulkCandidateList) {
+          const rows = [];
+          addedList.forEach(bm => {
+            rows.push(`
+              <div class="delete-list-item">
+                <div class="delete-list-title">✅ ${escapeHtmlClient(bm.title)} <span style="color:#34d399; font-size:0.73rem;">(${escapeHtmlClient((bm.hierarchy && bm.hierarchy[0]) || '')})</span></div>
+                <div class="delete-list-url">${escapeHtmlClient(bm.url)}</div>
+              </div>
+            `);
+          });
+          skippedList.forEach(sk => {
+            rows.push(`
+              <div class="delete-list-item">
+                <div class="delete-list-title">⚠️ ${escapeHtmlClient(sk.title || sk.url)} <span style="color:#fbbf24; font-size:0.73rem;">(${escapeHtmlClient(sk.reason || 'Skipped')})</span></div>
+                <div class="delete-list-url">${escapeHtmlClient(sk.url)}</div>
+              </div>
+            `);
+          });
+          bulkCandidateList.innerHTML = rows.join('') || `<div class="delete-list-item"><div class="delete-list-title">No new bookmarks to import.</div></div>`;
+        }
+        showToast(`✅ Bulk import complete: ${data.ingested_count} ingested, ${data.skipped_count} skipped.`, 'success', 6000);
+      }
+    } catch (err) {
+      showToast(`❌ Bulk import failed: ${err.message}`, 'error', 6000);
+    } finally {
+      if (btnBulkPreview) btnBulkPreview.disabled = false;
+      if (btnBulkExecute) btnBulkExecute.disabled = false;
+      if (btnBulkSpinner) btnBulkSpinner.style.display = 'none';
+      if (btnBulkText) btnBulkText.textContent = 'Inspect & Import New';
+    }
+  }
+
+  if (btnBulkPreview) btnBulkPreview.addEventListener('click', () => runBulkImport(true));
+  if (btnBulkExecute) btnBulkExecute.addEventListener('click', () => runBulkImport(false));
 
   // Delegate clicks on card note edit buttons (.bm-note-edit-btn)
   document.addEventListener('click', (e) => {

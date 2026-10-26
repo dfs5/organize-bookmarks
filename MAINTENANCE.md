@@ -40,6 +40,13 @@ Quick links to project maintenance guides:
 # Rebuild the interactive dark showcase web app
 python3 generate_dark_showcase.py
 
+# Ingest a single bookmark URL from CLI (updates catalog, metadata, content cache, and both HTML files)
+python3 ai_agent_server/ai_agent_server.py --ingest-url "https://example.com/doc" --notes "Optional note"
+
+# Bulk import bookmarks from Netscape .html export, Chrome/Edge Bookmarks JSON, .json catalog, or .txt/.md URL list
+python3 ai_agent_server/ai_agent_server.py --import-file ~/Downloads/bookmarks.html --dry-run
+python3 ai_agent_server/ai_agent_server.py --import-file ~/Downloads/bookmarks.html --max-import 25 --notes "Imported batch"
+
 # Sync Edge/Chrome browser visit counts on existing curated bookmarks (and optionally list top unbookmarked candidates)
 python3 sync_edge_history_bookmarks.py
 python3 sync_edge_history_bookmarks.py --dry-run --show-candidates

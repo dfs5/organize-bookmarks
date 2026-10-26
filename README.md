@@ -16,7 +16,7 @@ A zero-dependency Python knowledge management, taxonomy curation, and hybrid AI 
   - **Stage 1 — Intent Extraction**: Parses natural-language queries into structured product/topic/source filters via Google Vertex AI (`Gemini`), Gemini Developer API, local GPU `Ollama`, or a deterministic BM25/taxonomy heuristic fallback.
   - **Stage 2 — Hybrid BM25 + Taxonomy + Visit-Frequency Scoring**: Scores catalog entries across titles, descriptions, 150–250 word technical summaries, custom notes, and logarithmic browser visit counts.
   - **Stage 3 — Deep Content Verification & Grounded Synthesis**: Verifies candidate relevance against cached/extracted page content and generates a grounded technical answer citing `[1]`, `[2]`, etc.
-- **🌐 Live Browser CDP Bookmark Ingestion**: Inspects newly added bookmarks via an active Chrome/Edge DevTools Protocol (CDP) session or `/browser` subagent payload—handling JavaScript SPAs, SSO sessions, and `#fragment` deep links—and updates the catalog + HTML outputs in a single step.
+- **🌐 Live Browser CDP & Bulk Bookmark Ingestion**: Inspects newly added single bookmarks (via `+ Add Bookmark`, `POST /api/bookmarks/add`, or `--ingest-url`) and bulk-imports bookmark exports (`.html` Netscape exports, Chrome/Edge `Bookmarks` JSON, `.json` catalog arrays, or `.txt`/`.md` URL lists via `+ Add Bookmark ➔ Bulk Import`, `POST /api/bookmarks/import`, or `--import-file`), deduplicating against the catalog and updating all JSON stores + HTML outputs in a single step.
 - **📊 Safe Browser History Visit Sync (`sync_edge_history_bookmarks.py`)**: Reads local Microsoft Edge and Google Chrome SQLite history databases (via temp copies to avoid file locks) to update `visit_count` rankings on existing curated bookmarks without injecting unverified history URLs.
 
 ---
@@ -34,13 +34,14 @@ The main dashboard (`bookmarks_showcase.html`) renders the entire curated catalo
 
 ---
 
-### 2. Add Bookmark Modal with Deep AI & Live Browser Inspection
+### 2. Add Bookmark Modal with Single URL & Bulk Import Workflows
 ![Add Bookmark with Deep AI Inspection Modal](docs/screenshot-add-bookmark-modal.png)
 
-Clicking **`+ Add Bookmark`** opens the live ingestion workflow backed by `POST /api/bookmarks/add` on the local AI Agent Server:
-- **Look, Don't Scrape Inspection (`Inspect & Ingest`)**: Paste any documentation, KB article, GitHub repo, or internal portal URL. The server inspects the rendered DOM (via live Chrome/Edge CDP or `/browser` inspection), extracts headings and body content, and automatically synthesizes a clean title, 110–180 char description, 150–250 word technical summary, 9-pillar hierarchy placement, and multi-dimensional tags.
+Clicking **`+ Add Bookmark`** opens the live ingestion modal with two modes (`🔗 Single URL` and `📂 Bulk Import`):
+- **Look, Don't Scrape Single-URL Inspection (`Inspect & Ingest`)**: Paste any documentation, KB article, GitHub repo, or internal portal URL. The server inspects the rendered DOM (via live Chrome/Edge CDP or `/browser` inspection), extracts headings and body content, and automatically synthesizes a clean title, 110–180 char description, 150–250 word technical summary, 9-pillar hierarchy placement, and multi-dimensional tags.
+- **Bulk Import (`HTML / JSON / URLs`)**: Switch to the **`📂 Bulk Import`** tab to upload a Netscape `.html` bookmark export, Chrome/Edge `Bookmarks` JSON file, `.json` catalog array, or plain-text/Markdown URL list (or paste raw content directly). Click **`🔍 Preview New Candidates (Dry Run)`** to deduplicate against your existing catalog and inspect which URLs are new before running **`🚀 Import New Bookmarks`** (batch-capped at up to 25 new bookmarks per run with full enrichment).
 - **Custom User Notes**: Attach optional personal context or customer/project reminders (`Custom Notes`) that are persisted in `bookmarks_catalog.json`, displayed as amber badges on the card, and weighted heavily in BM25 & AI Copilot retrieval.
-- **Automated Backup & Multi-Target Sync**: Every addition or deletion automatically snapshots `bookmarks_catalog.json` into `archive/backups/`, updates the local browser bookmarks profile (`Bookmarks`), and regenerates both `bookmarks_showcase.html` and the Netscape bookmark export (`favorites_product_frequency_organized.html`).
+- **Automated Backup & Multi-Target Sync**: Every addition, bulk import, or deletion automatically snapshots `bookmarks_catalog.json` into `archive/backups/`, updates the local browser bookmarks profile (`Bookmarks`), and regenerates both `bookmarks_showcase.html` and the Netscape bookmark export (`favorites_product_frequency_organized.html`).
 
 ---
 
@@ -167,12 +168,24 @@ python3 .agents/skills/bookmark-lookup/lookup.py "rseries sizing"
 python3 .agents/skills/bookmark-lookup/lookup.py --product f5-xc --topic security-waf
 ```
 
-### Canonical CLI Bookmark Ingestion
+### Canonical CLI Bookmark Ingestion (Single URL & Bulk File Import)
 ```bash
+# Single URL ingestion with pre-extracted browser metadata
 python3 ai_agent_server/ai_agent_server.py \
   --ingest-url "https://docs.nginx.com/" \
   --browser-json '{"title":"F5 NGINX Product Documentation","h1":"F5 NGINX Documentation","meta_desc":"Official documentation for NGINX products.","company_context":"F5 NGINX application delivery and API security","body_text":"..."}' \
   --notes "Core NGINX documentation portal"
+
+# Dry-run preview of a bulk bookmark import (.html export, Chrome/Edge Bookmarks JSON, .json catalog, or .txt/.md URL list)
+python3 ai_agent_server/ai_agent_server.py \
+  --import-file ~/Downloads/bookmarks_export.html \
+  --dry-run
+
+# Execute bulk import of new (unbookmarked) URLs with full inspection & taxonomy enrichment
+python3 ai_agent_server/ai_agent_server.py \
+  --import-file ~/Downloads/bookmarks_export.html \
+  --max-import 25 \
+  --notes "Imported from browser export"
 ```
 
 ### Browser History Visit Sync

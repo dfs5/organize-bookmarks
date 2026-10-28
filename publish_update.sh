@@ -139,8 +139,13 @@ if os.path.exists(conf_live):
         txt,
         count=1,
     )
-    # Redact project_id value
+    # Redact project_id value and strip local-only custom_header_link block
     txt = re.sub(r'("project_id"\s*:\s*)"[^"]*"', r'\1"YOUR_GCP_PROJECT_ID"', txt)
+    txt = re.sub(
+        r',\n\s*# Local-only header link[^\n]*\n\s*"custom_header_link"\s*:\s*\{[^}]*\}',
+        "",
+        txt,
+    )
     old_ex = open(conf_example, "r", encoding="utf-8").read() if os.path.exists(conf_example) else ""
     if txt != old_ex:
         with open(conf_example, "w", encoding="utf-8") as f:
@@ -283,6 +288,8 @@ for p in files_to_check:
             issues.append(f"Potential live token or private key found in {p}")
     if re.search(r"f5-my\.sharepoint\.com", txt, re.I) and p != "publish_update.sh":
         issues.append(f"Personal SharePoint URL found in {p}")
+    if re.search(r"localhost:8766|127\.0\.0\.1:8766", txt, re.I) and p != "publish_update.sh":
+        issues.append(f"Local-only AI Chat endpoint (port 8766) found in {p}")
 
     if p.endswith(".py"):
         try:

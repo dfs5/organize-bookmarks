@@ -10,6 +10,8 @@ if [ ! -f "$CONF_FILE" ] && [ -f "$DIR/ai_agent_server.conf.example" ]; then
   CONF_FILE="$DIR/ai_agent_server.conf.example"
 fi
 COMM_LOG_FILE="$DIR/ai_communication.log"
+PLIST_LABEL="com.antigravity.bookmarks-ai-server"
+PLIST_FILE="$HOME/Library/LaunchAgents/$PLIST_LABEL.plist"
 
 cd "$DIR" || exit 1
 
@@ -45,6 +47,9 @@ case "$1" in
     ;;
 
   --stop)
+    if [ -f "$PLIST_FILE" ]; then
+      launchctl bootout "gui/$(id -u)/$PLIST_LABEL" 2>/dev/null || launchctl unload "$PLIST_FILE" 2>/dev/null || true
+    fi
     if [ -f "$PID_FILE" ]; then
       PID=$(cat "$PID_FILE")
       if kill -0 "$PID" 2>/dev/null; then
@@ -67,14 +72,9 @@ case "$1" in
     ;;
 
   --status)
-    if [ -f "$PID_FILE" ]; then
-      PID=$(cat "$PID_FILE")
-      if kill -0 "$PID" 2>/dev/null; then
-        echo "🟢 AI Agent server is running (PID: $PID) on http://localhost:$PORT"
-      fi
-    elif is_server_running; then
-      PORT_PID=$(lsof -ti :$PORT 2>/dev/null)
-      echo "🟢 AI Agent server is active on port $PORT (PID: $PORT_PID)"
+    if is_server_running; then
+      PORT_PID=$(lsof -ti :$PORT 2>/dev/null | head -n1)
+      echo "🟢 AI Agent server is running (PID: $PORT_PID) on http://localhost:$PORT"
     else
       echo "⚪ AI Agent server is stopped."
       exit 0
@@ -170,6 +170,21 @@ case "$1" in
     fi
 
     echo "🚀 Starting AI Agent server in background on port $PORT..."
+    if [ $# -eq 0 ] && [ -f "$PLIST_FILE" ]; then
+      launchctl bootstrap "gui/$(id -u)" "$PLIST_FILE" 2>/dev/null || launchctl load "$PLIST_FILE" 2>/dev/null || true
+      launchctl kickstart -k "gui/$(id -u)/$PLIST_LABEL" 2>/dev/null || true
+      sleep 1
+      NEW_PID=$(lsof -ti :$PORT 2>/dev/null | head -n1)
+      if [ -n "$NEW_PID" ]; then
+        echo "$NEW_PID" > "$PID_FILE"
+        echo "✅ Server started via LaunchAgent ($PLIST_LABEL)! PID: $NEW_PID"
+        echo "🌐 Open showcase: http://localhost:$PORT/bookmarks_showcase.html"
+        echo "📜 Server log: $LOG_FILE"
+        echo "⚙️  Config file: $CONF_FILE"
+        echo "💡 Enable traffic logging anytime with: $0 --enable-logging"
+        exit 0
+      fi
+    fi
     nohup python3 "$DIR/ai_agent_server.py" "$@" > "$LOG_FILE" 2>&1 &
     NEW_PID=$!
     echo $NEW_PID > "$PID_FILE"

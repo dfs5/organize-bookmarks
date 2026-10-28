@@ -429,6 +429,16 @@ comm_logger = CommunicationLogger(
     log_healthcheck=COMM_LOG_HEALTHCHECK
 )
 
+def _build_http_opener():
+    """Builds a urllib opener bypassing HTTP proxies and relaxing Python 3.13's strict X509 key-usage flag."""
+    ctx = ssl.create_default_context()
+    if hasattr(ssl, "VERIFY_X509_STRICT"):
+        ctx.verify_flags &= ~ssl.VERIFY_X509_STRICT
+    return urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        urllib.request.HTTPSHandler(context=ctx),
+    )
+
 def send_llm_request(provider: str, model_name: str, url: str, payload: dict, headers: dict = None, timeout: float = 10.0) -> dict:
     """
     Centralized HTTP dispatcher for all LLM API calls.
@@ -441,7 +451,7 @@ def send_llm_request(provider: str, model_name: str, url: str, payload: dict, he
 
     comm_logger.log_llm_request(call_id, provider, model_name, url, effective_headers, payload)
 
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    opener = _build_http_opener()
     data_bytes = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data_bytes, headers=effective_headers)
 
@@ -532,7 +542,7 @@ class GoogleAuthHelper:
                         "grant_type": "refresh_token"
                     }).encode()
                     req = urllib.request.Request("https://oauth2.googleapis.com/token", data=data)
-                    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+                    opener = _build_http_opener()
                     with opener.open(req, timeout=5) as resp:
                         res = json.loads(resp.read().decode())
                         cls._cached_token = res["access_token"]
@@ -832,7 +842,7 @@ class LLMIntentExtractor:
         # 3. Local Ollama GPU Engine
         try:
             req = urllib.request.Request(f"{self.ollama_url}/api/tags", headers={"User-Agent": "BookmarksAI"})
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            opener = _build_http_opener()
             with opener.open(req, timeout=1.5) as resp:
                 data = json.loads(resp.read().decode())
                 models = [m.get("name", "") for m in data.get("models", [])]
@@ -1462,7 +1472,7 @@ class LLMBridge:
         # 3. Local Ollama GPU Engine
         try:
             req = urllib.request.Request(f"{self.ollama_url}/api/tags", headers={"User-Agent": "BookmarksAI"})
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            opener = _build_http_opener()
             with opener.open(req, timeout=1.0) as resp:
                 if resp.status == 200:
                     return {"provider": "ollama", "details": f"Local Ollama ({self.ollama_model}) at {self.ollama_url}"}

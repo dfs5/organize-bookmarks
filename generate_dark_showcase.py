@@ -16,6 +16,29 @@ def get_pillar_and_sub(b):
 def esc(s):
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
+custom_header_link_markup = ""
+if OUTPUT_HTML == "bookmarks_showcase.html" and os.path.exists("ai_agent_server/ai_agent_server.conf"):
+    try:
+        with open("ai_agent_server/ai_agent_server.conf", "r", encoding="utf-8") as cf:
+            cleaned_conf = "\n".join(
+                line for line in cf if not line.lstrip().startswith("#")
+            )
+            conf_data = json.loads(cleaned_conf)
+            hdr_link = conf_data.get("server", {}).get("custom_header_link")
+            if isinstance(hdr_link, dict) and hdr_link.get("url") and hdr_link.get("label"):
+                link_url = esc(hdr_link["url"])
+                link_label = esc(hdr_link["label"])
+                link_icon = esc(hdr_link.get("icon", "💬"))
+                link_title = esc(hdr_link.get("title", f"Open {hdr_link['label']}"))
+                custom_header_link_markup = f"""
+    <a href="{link_url}" target="_blank" rel="noopener noreferrer" class="custom-header-link-btn" title="{link_title}">
+      <span class="custom-header-link-icon">{link_icon}</span>
+      <span>{link_label}</span>
+      <span class="custom-header-link-ext">↗</span>
+    </a>"""
+    except Exception:
+        pass
+
 tree = {}
 for b in catalog:
     pillar, subcat = get_pillar_and_sub(b)
@@ -539,7 +562,7 @@ html = f"""<!DOCTYPE html>
     <div class="search-wrapper">
       <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="Search by keyword, product, topic, 'vpn', or URL..." autofocus>
-    </div>
+    </div>{custom_header_link_markup}
     <button id="aiToolbarBtn" class="ai-toolbar-btn" type="button" title="Ask AI Copilot (⌘K)">
       <span class="ai-sparkle">✨</span>
       <span>Ask AI Copilot</span>
@@ -1733,6 +1756,42 @@ html += r"""
   @keyframes toastIn {
     from { opacity: 0; transform: translateY(-12px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Optional Custom Header Toolbar Link */
+  .custom-header-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.28));
+    border: 1px solid rgba(103, 232, 249, 0.45);
+    border-radius: 10px;
+    padding: 10px 18px;
+    color: #ecfeff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.15);
+  }
+  .custom-header-link-btn:hover {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(59, 130, 246, 0.45));
+    border-color: #22d3ee;
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.35);
+    transform: translateY(-1px);
+    color: #fff;
+  }
+  .custom-header-link-icon {
+    font-size: 1.05rem;
+    filter: drop-shadow(0 0 4px #67e8f9);
+  }
+  .custom-header-link-ext {
+    font-size: 0.78rem;
+    color: #67e8f9;
+    opacity: 0.85;
   }
 
   /* AI Toolbar Button */

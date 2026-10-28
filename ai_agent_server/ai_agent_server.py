@@ -2059,6 +2059,242 @@ class BookmarkInspector:
                 pass
         return company_summary
 
+    def _discover_browser_ws_endpoint(self):
+        """
+        Discovers a direct browser-level CDP WebSocket URL from DevToolsActivePort
+        (supported by Chrome 136+ chrome://inspect/#remote-debugging even when HTTP /json/* is disabled).
+        NEVER connects to a headless browser.
+        """
+        import socket
+
+        home = os.path.expanduser("~")
+        port_files = [
+            os.path.join(home, ".gemini", "antigravity-browser-profile", "DevToolsActivePort"),
+            os.path.join(home, ".gemini", "antigravity", "browser-profile", "DevToolsActivePort"),
+            os.path.join(home, "Library", "Application Support", "Google", "Chrome", "DevToolsActivePort"),
+        ]
+        try:
+            out = subprocess.check_output(["ps", "auxww"], text=True, stderr=subprocess.DEVNULL, timeout=2)
+            for line in out.splitlines():
+                if "--headless" in line or "agy_chrome" in line:
+                    continue
+                for m in re.finditer(r"--user-data-dir=([^\s\"']+)", line):
+                    udir = m.group(1).strip()
+                    if "agy_chrome" in udir:
+                        continue
+                    pf = os.path.join(udir, "DevToolsActivePort")
+                    if pf not in port_files:
+                        port_files.insert(0, pf)
+        except Exception:
+            pass
+
+        for pf in port_files:
+            try:
+                if not os.path.exists(pf):
+                    continue
+                with open(pf, "r", encoding="utf-8") as f:
+                    lines = [ln.strip() for ln in f.read().splitlines() if ln.strip()]
+                if len(lines) >= 2 and lines[0].isdigit() and lines[1].startswith("/devtools/"):
+                    port = int(lines[0])
+                    ws_path = lines[1]
+                    if port <= 0 or port == 9233:
+                        continue
+                    with socket.create_connection(("127.0.0.1", port), timeout=0.6):
+                        pass
+                    return f"ws://127.0.0.1:{port}{ws_path}"
+            except Exception:
+                continue
+        return None
+
+    def _inspect_via_browser_ws(self, browser_ws_url, target_url, js_extract_sync, handshake_timeout=25.0):
+        """
+        Inspects target_url over a browser-level CDP WebSocket (Target.createTarget +
+        Target.attachToTarget(flatten=True) + Runtime.evaluate) when HTTP /json/* endpoints
+        are disabled by Chrome 136+ native remote debugging.
+        """
+        import base64
+        import socket
+        import struct
+
+        parsed = urlparse(browser_ws_url)
+        host = parsed.hostname or "127.0.0.1"
+        port = parsed.port or 9222
+        path = parsed.path or "/"
+        if parsed.query:
+            path += "?" + parsed.query
+
+        sock = socket.create_connection((host, port), timeout=handshake_timeout)
+        opened_target_id = None
+        try:
+            key = base64.b64encode(os.urandom(16)).decode("ascii")
+            handshake = (
+                f"GET {path} HTTP/1.1\r\n"
+                f"Host: {host}:{port}\r\n"
+                f"Upgrade: websocket\r\n"
+                f"Connection: Upgrade\r\n"
+                f"Sec-WebSocket-Key: {key}\r\n"
+                f"Sec-WebSocket-Version: 13\r\n\r\n"
+            )
+            sock.sendall(handshake.encode("utf-8"))
+            resp_buf = b""
+            while b"\r\n\r\n" not in resp_buf:
+                chunk = sock.recv(4096)
+                if not chunk:
+                    raise RuntimeError("CDP Browser WebSocket handshake EOF (remote debugging dialog denied or closed)")
+                resp_buf += chunk
+            header_line = resp_buf.split(b"\r\n", 1)[0].decode("utf-8", errors="replace")
+            if "101" not in header_line:
+                raise RuntimeError(f"CDP Browser WebSocket handshake rejected: {header_line}")
+
+            sock.settimeout(6.0)
+            leftover = resp_buf.split(b"\r\n\r\n", 1)[1]
+
+            def send_ws_json(obj):
+                payload = json.dumps(obj).encode("utf-8")
+                mask_key = os.urandom(4)
+                header = bytearray([0x81])
+                length = len(payload)
+                if length < 126:
+                    header.append(0x80 | length)
+                elif length < 65536:
+                    header.append(0x80 | 126)
+                    header.extend(struct.pack("!H", length))
+                else:
+                    header.append(0x80 | 127)
+                    header.extend(struct.pack("!Q", length))
+                header.extend(mask_key)
+                masked = bytearray(length)
+                for i in range(length):
+                    masked[i] = payload[i] ^ mask_key[i % 4]
+                sock.sendall(header + masked)
+
+            def recv_exact(n):
+                nonlocal leftover
+                while len(leftover) < n:
+                    chunk = sock.recv(65536)
+                    if not chunk:
+                        raise RuntimeError("CDP Browser WebSocket unexpected EOF")
+                    leftover += chunk
+                out, leftover = leftover[:n], leftover[n:]
+                return out
+
+            def recv_ws_json():
+                while True:
+                    b1, b2 = recv_exact(2)
+                    opcode = b1 & 0x0F
+                    masked = bool(b2 & 0x80)
+                    length = b2 & 0x7F
+                    if length == 126:
+                        length = struct.unpack("!H", recv_exact(2))[0]
+                    elif length == 127:
+                        length = struct.unpack("!Q", recv_exact(8))[0]
+                    mask_bytes = recv_exact(4) if masked else b""
+                    data = bytearray(recv_exact(length))
+                    if masked:
+                        for i in range(length):
+                            data[i] ^= mask_bytes[i % 4]
+                    if opcode == 0x8:
+                        raise RuntimeError("CDP Browser WebSocket closed by peer")
+                    if opcode == 0x9:
+                        # Respond with pong frame
+                        pong = bytearray([0x8A, 0x80]) + os.urandom(4)
+                        sock.sendall(pong)
+                        continue
+                    if opcode == 0x1:
+                        return json.loads(data.decode("utf-8", errors="replace"))
+
+            def call_cdp(msg_id, method, params=None, session_id=None, call_timeout=5.0):
+                req = {"id": msg_id, "method": method, "params": params or {}}
+                if session_id:
+                    req["sessionId"] = session_id
+                send_ws_json(req)
+                deadline = time.time() + call_timeout
+                while time.time() < deadline:
+                    msg = recv_ws_json()
+                    if msg.get("id") == msg_id:
+                        if "error" in msg:
+                            raise RuntimeError(f"CDP {method} error: {msg['error']}")
+                        return msg.get("result") or {}
+                raise TimeoutError(f"CDP {method} timed out")
+
+            targets_res = call_cdp(1, "Target.getTargets", {})
+            target_infos = targets_res.get("targetInfos") or []
+            norm_target = normalize_url_for_comparison(target_url)
+            target_id = None
+            for t in target_infos:
+                if t.get("type") == "page" and normalize_url_for_comparison(t.get("url", "")) == norm_target:
+                    target_id = t.get("targetId")
+                    break
+            if not target_id:
+                create_res = call_cdp(2, "Target.createTarget", {"url": target_url})
+                target_id = create_res.get("targetId")
+                opened_target_id = target_id
+            if not target_id:
+                return None
+
+            attach_res = call_cdp(3, "Target.attachToTarget", {"targetId": target_id, "flatten": True})
+            session_id = attach_res.get("sessionId")
+            if not session_id:
+                return None
+
+            expected_k_match = re.search(r"/article/(K\d+)", target_url, re.IGNORECASE)
+            expected_k = expected_k_match.group(1).upper() if expected_k_match else None
+            last_valid = None
+            for attempt in range(18):
+                time.sleep(0.45)
+                try:
+                    eval_res = call_cdp(
+                        100 + attempt,
+                        "Runtime.evaluate",
+                        {
+                            "expression": js_extract_sync,
+                            "awaitPromise": False,
+                            "returnByValue": True,
+                        },
+                        session_id=session_id,
+                        call_timeout=2.5,
+                    )
+                    res = (eval_res.get("result") or {}).get("value")
+                except Exception:
+                    res = None
+                if isinstance(res, dict):
+                    u = res.get("final_url", "")
+                    txt = (res.get("body_text") or "").strip()
+                    ttl = (res.get("title") or "").strip()
+                    rstate = res.get("ready_state", "")
+                    if self._is_bot_challenge_page(ttl, txt):
+                        continue
+                    if expected_k:
+                        m_dom_k = re.search(r"\b(K\d{4,10})\s*:", (ttl + " " + txt[:350]), re.IGNORECASE)
+                        if m_dom_k and m_dom_k.group(1).upper() != expected_k:
+                            continue
+                    if u and u != "about:blank" and (ttl or txt):
+                        last_valid = res
+                    if (
+                        u
+                        and u != "about:blank"
+                        and rstate == "complete"
+                        and len(txt) > 140
+                        and not txt.lower().startswith("loading")
+                        and (not expected_k or expected_k in (ttl + " " + txt[:450]).upper())
+                    ):
+                        return res
+            if last_valid:
+                return last_valid
+        except Exception:
+            return None
+        finally:
+            if opened_target_id:
+                try:
+                    send_ws_json({"id": 999, "method": "Target.closeTarget", "params": {"targetId": opened_target_id}})
+                except Exception:
+                    pass
+            try:
+                sock.close()
+            except Exception:
+                pass
+        return None
+
     def _discover_browser_cdp_port(self):
         """
         Discovers the active /browser subagent Chrome DevTools Protocol (CDP) port.
@@ -2068,6 +2304,7 @@ class BookmarkInspector:
         port_files = [
             os.path.join(home, ".gemini", "antigravity-browser-profile", "DevToolsActivePort"),
             os.path.join(home, ".gemini", "antigravity", "browser-profile", "DevToolsActivePort"),
+            os.path.join(home, "Library", "Application Support", "Google", "Chrome", "DevToolsActivePort"),
         ]
         candidate_ports = []
         try:
@@ -2222,6 +2459,85 @@ class BookmarkInspector:
                 pass
         return None
 
+    def _inspect_via_macos_open_tab(self, target_url, js_extract_sync):
+        """
+        Inspects ONLY the tab matching `target_url` in the user's running macOS Google Chrome
+        or Microsoft Edge via JXA (osascript) when 'Allow JavaScript from Apple Events' is enabled.
+        Never executes JavaScript on any other open tabs.
+        """
+        if sys.platform != "darwin":
+            return None
+        norm_target = normalize_url_for_comparison(target_url)
+        jxa_script = """
+        ObjC.import('stdlib');
+        const targetUrl = $.getenv('TARGET_URL') || '';
+        const normTarget = $.getenv('NORM_TARGET') || '';
+        const jsCode = $.getenv('JS_EXTRACT_CODE') || '';
+        function norm(u) {
+            let s = String(u || '').trim();
+            try {
+                const parsed = new URL(s);
+                const host = parsed.hostname.toLowerCase().replace(/^www\\./, '');
+                const path = parsed.pathname.replace(/\\/+$/, '') || '/';
+                return parsed.protocol.toLowerCase() + '//' + host + path + (parsed.search || '');
+            } catch (e) {
+                return s.replace(/\\/+$/, '').toLowerCase();
+            }
+        }
+        const normTargetStrict = norm(targetUrl);
+        const browsers = ['Google Chrome', 'Microsoft Edge'];
+        for (const bName of browsers) {
+            try {
+                const app = Application(bName);
+                if (!app.running()) continue;
+                const wins = app.windows();
+                let matchedTab = null;
+                for (let w = 0; w < wins.length; w++) {
+                    const tabs = wins[w].tabs();
+                    for (let t = 0; t < tabs.length; t++) {
+                        const u = tabs[t].url();
+                        if (norm(u) === normTargetStrict || norm(u) === normTarget) {
+                            matchedTab = tabs[t];
+                            break;
+                        }
+                    }
+                    if (matchedTab) break;
+                }
+                if (matchedTab) {
+                    const out = matchedTab.execute({javascript: 'JSON.stringify(' + jsCode + ')'});
+                    if (out) {
+                        console.log(out);
+                        $.exit(0);
+                    }
+                }
+            } catch (e) {
+                console.log('ERR:' + String(e));
+            }
+        }
+        """
+        env = os.environ.copy()
+        env["TARGET_URL"] = target_url
+        env["NORM_TARGET"] = norm_target
+        env["JS_EXTRACT_CODE"] = js_extract_sync
+        try:
+            proc = subprocess.run(
+                ["osascript", "-l", "JavaScript", "-e", jxa_script],
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=20.0,
+            )
+            combined = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+            for line in combined.splitlines():
+                line = line.strip()
+                if line.startswith("{") and line.endswith("}"):
+                    data = json.loads(line)
+                    if isinstance(data, dict) and (data.get("title") or data.get("body_text")):
+                        return data
+        except Exception:
+            pass
+        return None
+
     def _inspect_via_live_browser(self, target_url, allow_llm_fallback=False):
         """
         Inspects target_url strictly using the active /browser subagent Chrome instance
@@ -2279,6 +2595,9 @@ class BookmarkInspector:
           return { final_url, ready_state, title, meta_description, headings, body_text, has_f5_logo };
         })()
         """
+        macos_tab_res = self._inspect_via_macos_open_tab(target_url, js_extract_sync)
+        if macos_tab_res:
+            return macos_tab_res
         cdp_port = self._discover_browser_cdp_port()
         if cdp_port:
             opened_target_id = None
@@ -2346,6 +2665,11 @@ class BookmarkInspector:
                         urllib.request.urlopen(f"http://127.0.0.1:{cdp_port}/json/close/{opened_target_id}", timeout=1.5).read()
                     except Exception:
                         pass
+        browser_ws_url = self._discover_browser_ws_endpoint()
+        if browser_ws_url:
+            ws_res = self._inspect_via_browser_ws(browser_ws_url, target_url, js_extract_sync)
+            if ws_res:
+                return ws_res
         return None
 
     def fetch_page(self, url, browser_data=None):
@@ -2547,8 +2871,10 @@ class BookmarkInspector:
         if not has_browser_data and not has_verified_data:
             extracted["requires_browser_inspection"] = True
             extracted["browser_message"] = (
-                f"Website {final_url} has not been inspected with /browser yet. "
-                f"Raw urllib scraping is disabled; please inspect {final_url} using the /browser subagent first."
+                f"Could not read the open browser tab for {final_url}. "
+                f"To let the server inspect tabs you already have open in Chrome with zero popups, enable "
+                f"'View > Developer > Allow JavaScript from Apple Events' in Chrome's top menu bar "
+                f"(or click 'Allow' on Chrome's 'Allow remote debugging?' dialog)."
             )
             return final_url, "", extracted, extracted["browser_message"]
 

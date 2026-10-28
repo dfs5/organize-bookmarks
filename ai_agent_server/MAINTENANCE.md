@@ -266,3 +266,12 @@ Refresh your Application Default Credentials:
 gcloud auth application-default login
 ```
 The server will automatically detect and use the refreshed token without restarting.
+
+### Inspecting Already-Open Browser Tabs on macOS (`Inspect & Ingest`)
+When you click **Inspect & Ingest** in the `+ Add Bookmark` modal, `BookmarkInspector._inspect_via_live_browser` reads **only the single open tab** matching the URL you entered:
+1. **Zero-Popup macOS Open-Tab Inspection (Recommended)**:
+   - Enable **View → Developer → Allow JavaScript from Apple Events** once in Chrome's top menu bar.
+   - Click **Allow** on the one-time macOS Automation permission prompt (`"python3.13" wants access to control "Google Chrome.app"`).
+   - `_inspect_via_macos_open_tab` matches the exact normalized URL of the target tab and extracts its rendered DOM in `< 50 ms` without touching any other open tabs or requiring the `/browser` subagent.
+2. **Chrome 136+ `DevToolsActivePort` WebSocket Fallback**:
+   - If `chrome://inspect/#remote-debugging` is enabled (`~/Library/Application Support/Google/Chrome/DevToolsActivePort`), `_inspect_via_browser_ws` connects over the browser-level CDP WebSocket (`Target.getTargets` / `Target.attachToTarget` / `Runtime.evaluate`), requiring you to click **Allow** on Chrome's *"Allow remote debugging?"* prompt.

@@ -951,6 +951,15 @@ html += r"""
         </div>
       </div>
 
+      <!-- Persistent Inline Error Box -->
+      <div id="addErrorBox" class="add-error-box" role="alert" style="display:none;">
+        <div class="add-error-header">
+          <span class="add-error-badge">❌ Inspection / Ingestion Error</span>
+          <button type="button" id="btnDismissAddError" class="add-error-close" title="Dismiss error" aria-label="Dismiss error">&times;</button>
+        </div>
+        <div id="addErrorText" class="add-error-text"></div>
+      </div>
+
       <!-- Result Preview Box -->
       <div id="addResultBox" class="add-result-box" style="display:none;">
         <div class="result-header">
@@ -1250,6 +1259,54 @@ html += r"""
   .progress-step.done .step-dot {
     background: #10b981;
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  }
+
+  /* Persistent Inline Error Box in Add Modal */
+  .add-error-box {
+    background: rgba(69, 10, 10, 0.78);
+    border: 1px solid rgba(248, 113, 113, 0.55);
+    border-left: 4px solid #ef4444;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.18);
+    animation: fadeIn 0.25s ease;
+  }
+  .add-error-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .add-error-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.2);
+    padding: 3px 9px;
+    border-radius: 6px;
+  }
+  .add-error-close {
+    background: transparent;
+    border: none;
+    color: #fca5a5;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .add-error-close:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ffffff;
+  }
+  .add-error-text {
+    font-size: 0.85rem;
+    color: #fecaca;
+    line-height: 1.5;
+    word-break: break-word;
+    user-select: text;
   }
 
   /* Result Preview Box */
@@ -1728,30 +1785,77 @@ html += r"""
     flex-direction: column;
     gap: 10px;
     pointer-events: none;
+    max-width: min(520px, calc(100vw - 48px));
   }
   .toast {
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(148, 163, 184, 0.25);
+    position: relative;
+    inset: auto;
+    margin: 0;
+    background: rgba(15, 23, 42, 0.96);
+    border: 1px solid rgba(148, 163, 184, 0.3);
     border-radius: 10px;
-    padding: 12px 18px;
+    padding: 13px 16px;
     color: #ffffff;
     font-size: 0.88rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    line-height: 1.45;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(12px);
     pointer-events: auto;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
     animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    transition: all 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease, display 0.25s ease allow-discrete, overlay 0.25s ease allow-discrete;
+    transition-behavior: allow-discrete;
+    user-select: text;
+  }
+  .toast[popover]:is(:popover-open, .\:popover-open) {
+    position: fixed;
+    top: calc(24px + (sibling-index() - 1) * 76px);
+    right: 24px;
+    left: auto;
+    bottom: auto;
+    max-width: min(520px, calc(100vw - 48px));
+    display: flex;
+  }
+  .toast + .toast {
+    margin-top: 10px;
+  }
+  .toast-body {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+  .toast-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #cbd5e1;
+    border-radius: 6px;
+    width: 24px;
+    height: 24px;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .toast-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
   }
   .toast.toast-success {
-    border-color: rgba(34, 197, 94, 0.5);
-    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.55);
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.18);
   }
   .toast.toast-error {
-    border-color: rgba(239, 68, 68, 0.5);
-    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.15);
+    background: rgba(45, 12, 18, 0.97);
+    border-color: rgba(248, 113, 113, 0.65);
+    border-left: 4px solid #ef4444;
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.28);
   }
   @keyframes toastIn {
     from { opacity: 0; transform: translateY(-12px); }
@@ -2658,17 +2762,78 @@ html += r"""
 
   let isManageMode = false;
   const selectedUrls = new Set();
+  let toastSeq = 0;
+
+  if (!("popover" in HTMLElement.prototype)) {
+    import("https://unpkg.com/@oddbird/popover-polyfill@latest/dist/popover.min.js").catch(() => {});
+  }
 
   function showToast(message, type = 'info', duration = 4000) {
+    const effectiveDuration = type === 'error' ? Math.max(duration || 0, 25000) : duration;
+    const toastId = `bm-toast-${++toastSeq}`;
     const toast = document.createElement('div');
+    toast.id = toastId;
     toast.className = `toast toast-${type}`;
-    toast.innerHTML = message;
+    toast.setAttribute('popover', 'manual');
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+    const bodySpan = document.createElement('div');
+    bodySpan.className = 'toast-body';
+    bodySpan.innerHTML = message;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'toast-close-btn';
+    closeBtn.setAttribute('popovertarget', toastId);
+    closeBtn.setAttribute('popovertargetaction', 'hide');
+    closeBtn.setAttribute('aria-label', 'Dismiss notification');
+    closeBtn.title = 'Dismiss notification';
+    closeBtn.innerHTML = '&times;';
+
+    toast.appendChild(bodySpan);
+    toast.appendChild(closeBtn);
     toastContainer.appendChild(toast);
-    setTimeout(() => {
+
+    if (typeof toast.showPopover === 'function') {
+      try { toast.showPopover(); } catch (e) {}
+    }
+
+    let dismissTimer = null;
+    let remainingMs = effectiveDuration;
+    let timerStartedAt = Date.now();
+
+    const removeToast = () => {
+      if (dismissTimer) clearTimeout(dismissTimer);
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(-10px)';
-      setTimeout(() => toast.remove(), 300);
-    }, duration);
+      setTimeout(() => {
+        if (typeof toast.hidePopover === 'function') {
+          try { toast.hidePopover(); } catch (e) {}
+        }
+        toast.remove();
+      }, 280);
+    };
+
+    const startTimer = () => {
+      if (remainingMs <= 0) return;
+      timerStartedAt = Date.now();
+      dismissTimer = setTimeout(removeToast, remainingMs);
+    };
+
+    const pauseTimer = () => {
+      if (!dismissTimer) return;
+      clearTimeout(dismissTimer);
+      dismissTimer = null;
+      remainingMs = Math.max(2500, remainingMs - (Date.now() - timerStartedAt));
+    };
+
+    closeBtn.addEventListener('click', removeToast);
+    toast.addEventListener('mouseenter', pauseTimer);
+    toast.addEventListener('mouseleave', startTimer);
+    toast.addEventListener('focusin', pauseTimer);
+    toast.addEventListener('focusout', startTimer);
+
+    startTimer();
   }
 
   function updateSelectionUI() {
@@ -2854,6 +3019,9 @@ html += r"""
   const btnAddSpinner = document.getElementById('btnAddSpinner');
   const btnAddText = document.getElementById('btnAddText');
   const addProgressBox = document.getElementById('addProgressBox');
+  const addErrorBox = document.getElementById('addErrorBox');
+  const addErrorText = document.getElementById('addErrorText');
+  const btnDismissAddError = document.getElementById('btnDismissAddError');
   const addResultBox = document.getElementById('addResultBox');
   const stepFetch = document.getElementById('stepFetch');
   const stepInspect = document.getElementById('stepInspect');
@@ -2904,6 +3072,22 @@ html += r"""
     btnSaveNoteOnly.style.display = exists ? 'inline-flex' : 'none';
   }
 
+  function showAddModalError(message) {
+    if (!addErrorBox || !addErrorText) return;
+    addErrorText.textContent = message;
+    addErrorBox.style.display = 'block';
+  }
+
+  function hideAddModalError() {
+    if (!addErrorBox) return;
+    addErrorBox.style.display = 'none';
+    if (addErrorText) addErrorText.textContent = '';
+  }
+
+  if (btnDismissAddError) {
+    btnDismissAddError.addEventListener('click', hideAddModalError);
+  }
+
   function openAddModal(prefillUrl = '', prefillNotes = '') {
     if (!addBookmarkModal) return;
     const urlStr = typeof prefillUrl === 'string' ? prefillUrl : '';
@@ -2931,6 +3115,7 @@ html += r"""
       }
     }, 80);
     if (addProgressBox) addProgressBox.style.display = 'none';
+    hideAddModalError();
     if (addResultBox) addResultBox.style.display = 'none';
     if (resultNotesBox) resultNotesBox.style.display = 'none';
     if (btnLocateNewCard) btnLocateNewCard.style.display = 'none';
@@ -3106,7 +3291,8 @@ html += r"""
         showToast(`✅ Bulk import complete: ${data.ingested_count} ingested, ${data.skipped_count} skipped.`, 'success', 6000);
       }
     } catch (err) {
-      showToast(`❌ Bulk import failed: ${err.message}`, 'error', 6000);
+      showAddModalError(`Bulk import failed: ${err.message}`);
+      showToast(`❌ Bulk import failed: ${escapeHtmlClient(err.message)}`, 'error', 25000);
     } finally {
       if (btnBulkPreview) btnBulkPreview.disabled = false;
       if (btnBulkExecute) btnBulkExecute.disabled = false;
@@ -3274,6 +3460,7 @@ html += r"""
     btnSubmitAddBookmark.disabled = true;
     btnAddSpinner.style.display = 'inline-block';
     btnAddText.textContent = 'Inspecting Site...';
+    hideAddModalError();
     addResultBox.style.display = 'none';
     btnLocateNewCard.style.display = 'none';
     addProgressBox.style.display = 'flex';
@@ -3403,7 +3590,12 @@ html += r"""
       btnAddSpinner.style.display = 'none';
       btnAddText.textContent = isEditingExistingNote ? 'Save Note & Update' : 'Inspect & Ingest';
       console.error('Add bookmark error:', err);
-      showToast(`❌ Failed to ingest bookmark: ${err.message}. Is the AI server running on port 8765?`, 'error', 7000);
+      const isNetworkErr = /failed to fetch|networkerror|load failed/i.test(String(err && err.message || ''));
+      const fullErrMsg = isNetworkErr
+        ? `Failed to ingest bookmark: ${err.message}. Is the AI server running on port 8765?`
+        : `Failed to ingest bookmark: ${err.message}`;
+      showAddModalError(fullErrMsg);
+      showToast(`❌ ${escapeHtmlClient(fullErrMsg)}`, 'error', 25000);
     }
   });
 
